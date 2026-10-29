@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="980" viewBox="0 0 1320 980" font-family="Malgun Gothic, 'Noto Sans KR', sans-serif">
+  <rect width="1320" height="980" fill="#ffffff"/>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#101F24">Tomo 배선도 · XIAO ESP32-S3 Plus</text>
+
+  <!-- ST7789 display -->
+  <rect x="140" y="70" width="440" height="180" rx="12" fill="#1f5fa8"/>
+  <rect x="190" y="88" width="300" height="140" rx="4" fill="#0d1b2a"/>
+  <text x="340" y="152" font-size="22" fill="#ffffff" text-anchor="middle" font-weight="700">ST7789</text>
+  <text x="340" y="180" font-size="15" fill="#c9d6e8" text-anchor="middle">SPI 디스플레이 240×320</text>
+  <g font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">
+    <text x="180" y="244">CS</text><text x="224" y="244">RES</text><text x="268" y="244">DC</text>
+    <text x="312" y="244">GND</text><text x="356" y="244">VCC</text><text x="400" y="244">BL</text>
+    <text x="444" y="244">SDA</text><text x="488" y="244">SCL</text><text x="532" y="244">SO</text>
+  </g>
+  <g fill="#d9a400">
+    <rect x="176" y="250" width="8" height="12"/><rect x="220" y="250" width="8" height="12"/><rect x="264" y="250" width="8" height="12"/>
+    <rect x="308" y="250" width="8" height="12"/><rect x="352" y="250" width="8" height="12"/><rect x="396" y="250" width="8" height="12"/>
+    <rect x="440" y="250" width="8" height="12"/><rect x="484" y="250" width="8" height="12"/><rect x="528" y="250" width="8" height="12"/>
+  </g>
+
+  <!-- XIAO board -->
+  <rect x="640" y="380" width="260" height="340" rx="16" fill="#1e1e1e"/>
+  <rect x="740" y="364" width="60" height="30" rx="6" fill="#9aa0a6"/>
+  <text x="770" y="384" font-size="11" fill="#1e1e1e" text-anchor="middle">USB-C</text>
+  <text x="770" y="535" font-size="18" fill="#ffffff" text-anchor="middle" font-weight="700">XIAO</text>
+  <text x="770" y="558" font-size="14" fill="#ffffff" text-anchor="middle">ESP32-S3 Plus</text>
+  <g font-size="14" font-weight="700" fill="#ffffff">
+    <text x="652" y="435">D0</text><text x="652" y="477">D1</text><text x="652" y="519">D2</text>
+    <text x="652" y="561">D3</text><text x="652" y="603">D4</text><text x="652" y="645">D5</text><text x="652" y="687" fill="#777">D6</text>
+  </g>
+  <g font-size="14" font-weight="700" fill="#ffffff" text-anchor="end">
+    <text x="888" y="435" fill="#777">5V</text><text x="888" y="477">GND</text><text x="888" y="519">3V3</text>
+    <text x="888" y="561">D10</text><text x="888" y="603">D9</text><text x="888" y="645">D8</text><text x="888" y="687" fill="#777">D7</text>
+  </g>
+  <g font-size="10" fill="#aaaaaa">
+    <text x="680" y="435">GPIO1</text><text x="680" y="477">GPIO2</text><text x="680" y="519">GPIO3</text>
+    <text x="680" y="561">GPIO4</text><text x="680" y="603">GPIO5</text><text x="680" y="645">GPIO6</text>
+  </g>
+  <g font-size="10" fill="#aaaaaa" text-anchor="end">
+    <text x="850" y="561">GPIO9</text><text x="855" y="603">GPIO8</text><text x="855" y="645">GPIO7</text>
+  </g>
+  <g fill="#d9a400">
+    <circle cx="640" cy="430" r="6"/><circle cx="640" cy="472" r="6"/><circle cx="640" cy="514" r="6"/><circle cx="640" cy="556" r="6"/>
+    <circle cx="640" cy="598" r="6"/><circle cx="640" cy="640" r="6"/><circle cx="640" cy="682" r="6"/>
+    <circle cx="900" cy="430" r="6"/><circle cx="900" cy="472" r="6"/><circle cx="900" cy="514" r="6"/><circle cx="900" cy="556" r="6"/>
+    <circle cx="900" cy="598" r="6"/><circle cx="900" cy="640" r="6"/><circle cx="900" cy="682" r="6"/>
+  </g>
+  <text x="770" y="708" font-size="11" fill="#cccccc" text-anchor="middle">뒷면: BAT+ / BAT− 패드</text>
+
+  <!-- Display -> left pins -->
+  <g fill="none" stroke-width="4" stroke-linejoin="round">
+    <polyline points="180,262 180,514 634,514" stroke="#f08c00"/>
+    <polyline points="224,262 224,472 634,472" stroke="#8e44ad"/>
+    <polyline points="268,262 268,430 634,430" stroke="#16a085"/>
+  </g>
+  <!-- Display -> right pins (routed above the board) -->
+  <g fill="none" stroke-width="4" stroke-linejoin="round">
+    <polyline points="312,262 312,366 930,366 930,472 906,472" stroke="#222222"/>
+    <polyline points="356,262 356,344 950,344 950,514 906,514" stroke="#d62828"/>
+    <polyline points="444,262 444,322 970,322 970,556 906,556" stroke="#1971c2"/>
+    <polyline points="488,262 488,300 990,300 990,640 906,640" stroke="#2f9e44"/>
+
+  </g>
+  <g stroke="#d62828" stroke-width="3"><line x1="392" y1="270" x2="408" y2="286"/><line x1="408" y1="270" x2="392" y2="286"/></g>
+  <!-- SO not connected -->
+  <g stroke="#d62828" stroke-width="3"><line x1="524" y1="270" x2="540" y2="286"/><line x1="540" y1="270" x2="524" y2="286"/></g>
+  <text x="550" y="285" font-size="13" fill="#d62828" font-weight="700">연결 안 함</text>
+
+
+  <!-- Wire labels -->
+  <g font-size="13" font-weight="700">
+    <text x="420" y="425" fill="#16a085">DC → D0</text>
+    <text x="420" y="467" fill="#8e44ad">RES → D1</text>
+    <text x="420" y="509" fill="#f08c00">CS → D2</text>
+    <text x="600" y="361" fill="#222222">GND → GND</text>
+    <text x="600" y="339" fill="#d62828">VCC → 3V3</text>
+    <text x="600" y="317" fill="#1971c2">SDA → D10</text>
+    <text x="720" y="295" fill="#2f9e44">SCL → D8</text>
+  </g>
+
+  <!-- Buttons -->
+  <g stroke="#555" stroke-width="4" fill="none">
+    <polyline points="170,556 634,556"/><polyline points="170,598 634,598"/><polyline points="170,640 634,640"/>
+    <polyline points="120,556 90,556"/><polyline points="120,598 90,598"/><polyline points="120,640 90,640"/>
+    <polyline points="90,556 90,700"/>
+  </g>
+  <g>
+    <g transform="translate(0,556)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
+    <g transform="translate(0,598)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
+    <g transform="translate(0,640)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
+  </g>
+  <g font-size="13" font-weight="700" fill="#555">
+    <text x="420" y="551">버튼1 → D3</text><text x="420" y="593">버튼2 → D4</text><text x="420" y="635">버튼3 → D5</text>
+  </g>
+  <!-- GND symbol (buttons) -->
+  <g stroke="#222" stroke-width="3"><line x1="72" y1="700" x2="108" y2="700"/><line x1="78" y1="708" x2="102" y2="708"/><line x1="84" y1="716" x2="96" y2="716"/></g>
+  <text x="90" y="738" font-size="13" text-anchor="middle" font-weight="700">GND</text>
+
+  <!-- Buzzer circuit from D9 -->
+  <path d="M906 598 H980 A10 10 0 0 1 1000 598 H1015 V780 H1030" fill="none" stroke="#c77700" stroke-width="4" stroke-linejoin="round"/>
+  <text x="1022" y="740" font-size="13" font-weight="700" fill="#c77700">D9 → 1kΩ → B</text>
+  <!-- resistor -->
+  <polyline points="1030,780 1040,780 1046,768 1058,792 1070,768 1082,792 1094,768 1100,780 1110,780" fill="none" stroke="#333" stroke-width="3"/>
+  <text x="1070" y="815" font-size="14" text-anchor="middle" font-weight="700">1kΩ</text>
+  <line x1="1110" y1="780" x2="1130" y2="780" stroke="#c77700" stroke-width="4"/>
+  <!-- NPN transistor -->
+  <circle cx="1160" cy="780" r="34" fill="none" stroke="#333" stroke-width="3"/>
+  <line x1="1142" y1="758" x2="1142" y2="802" stroke="#333" stroke-width="4"/>
+  <line x1="1130" y1="780" x2="1142" y2="780" stroke="#333" stroke-width="3"/>
+  <line x1="1142" y1="770" x2="1170" y2="750" stroke="#333" stroke-width="3"/>
+  <line x1="1142" y1="790" x2="1170" y2="810" stroke="#333" stroke-width="3"/>
+  <polygon points="1170,810 1156,808 1164,798" fill="#333"/>
+  <text x="1124" y="766" font-size="14" font-weight="700">B</text>
+  <text x="1180" y="742" font-size="14" font-weight="700">C</text>
+  <text x="1180" y="830" font-size="14" font-weight="700">E</text>
+  <text x="1212" y="786" font-size="13" fill="#555">NPN</text>
+  <line x1="1170" y1="750" x2="1170" y2="700" stroke="#333" stroke-width="4"/>
+  <line x1="1170" y1="810" x2="1170" y2="870" stroke="#222" stroke-width="4"/>
+  <g stroke="#222" stroke-width="3"><line x1="1152" y1="870" x2="1188" y2="870"/><line x1="1158" y1="878" x2="1182" y2="878"/><line x1="1164" y1="886" x2="1176" y2="886"/></g>
+  <text x="1170" y="908" font-size="13" text-anchor="middle" font-weight="700">GND</text>
+  <!-- buzzer -->
+  <circle cx="1170" cy="650" r="40" fill="#222"/>
+  <circle cx="1170" cy="650" r="8" fill="#555"/>
+  <text x="1222" y="655" font-size="14" font-weight="700">피에조 부저</text>
+  <text x="1182" y="704" font-size="13" font-weight="700">(−)</text>
+  <text x="1182" y="606" font-size="13" font-weight="700">(+)</text>
+  <line x1="1170" y1="610" x2="1170" y2="580" stroke="#d62828" stroke-width="4"/>
+  <polygon points="1150,580 1190,580 1170,560" fill="#d62828"/>
+  <text x="1170" y="552" font-size="14" text-anchor="middle" font-weight="700" fill="#d62828">3V3</text>
+
+  <!-- Battery -->
+  <rect x="680" y="840" width="180" height="70" rx="8" fill="#e8e2c8" stroke="#b5a96b" stroke-width="2"/>
+  <text x="770" y="872" font-size="15" text-anchor="middle" font-weight="700">LiPo 배터리</text>
+  <text x="770" y="894" font-size="13" text-anchor="middle">3.7V 500mAh</text>
+  <line x1="730" y1="840" x2="730" y2="726" stroke="#d62828" stroke-width="4"/>
+  <line x1="810" y1="840" x2="810" y2="726" stroke="#222" stroke-width="4"/>
+  <text x="722" y="800" font-size="13" text-anchor="end" font-weight="700" fill="#d62828">BAT+</text>
+  <text x="818" y="800" font-size="13" font-weight="700">BAT−</text>
+
+  <!-- Notes -->
+  <g font-size="13" fill="#333">
+    <text x="40" y="800" font-weight="700">메모</text>
+    <text x="40" y="822">· GND 기호와 3V3 표시는 모두 XIAO의 같은 이름 핀에 연결</text>
+    <text x="40" y="842">· XIAO GND 핀: 디스플레이 GND, 버튼 공통선, 트랜지스터 E</text>
+    <text x="40" y="862">· XIAO 3V3 핀: 디스플레이 VCC, 부저(+)</text>
+    <text x="40" y="882">· 부저(−)는 GND가 아니라 트랜지스터 C에 연결</text>
+    <text x="40" y="902">· 디스플레이 핀 순서는 그림 정리용 — 실물 뒷면 인쇄 기준으로 납땜</text>
+    <text x="40" y="922">· 배터리 패드는 XIAO 보드 뒷면</text>
+  </g>
+
+  <!-- Legend table -->
+  <g font-size="13">
+    <rect x="1030" y="70" width="260" height="420" rx="10" fill="#f7f2fb" stroke="#D591F2" stroke-width="2"/>
+    <text x="1046" y="98" font-size="15" font-weight="700" fill="#101F24">연결표</text>
+    <text x="1046" y="126" font-weight="700">디스플레이</text>
+    <text x="1046" y="148">SCL → D8 (GPIO7)</text>
+    <text x="1046" y="170">SDA → D10 (GPIO9)</text>
+    <text x="1046" y="192">CS → D2 (GPIO3)</text>
+    <text x="1046" y="214">RES → D1 (GPIO2)</text>
+    <text x="1046" y="236">DC → D0 (GPIO1)</text>
+    <text x="1046" y="258">VCC → 3V3 · GND → GND</text>
+    <text x="1046" y="280">BL → 연결 안 함</text>
+    <text x="1046" y="302">SO → 연결 안 함</text>
+    <text x="1046" y="332" font-weight="700">버튼 (반대쪽 → GND)</text>
+    <text x="1046" y="354">버튼1 → D3 (GPIO4)</text>
+    <text x="1046" y="376">버튼2 → D4 (GPIO5)</text>
+    <text x="1046" y="398">버튼3 → D5 (GPIO6)</text>
+    <text x="1046" y="428" font-weight="700">부저</text>
+    <text x="1046" y="450">D9 (GPIO8) → 1kΩ → NPN B</text>
+    <text x="1046" y="472">(+) → 3V3 · (−) → C · E → GND</text>
+  </g>
+</svg>
