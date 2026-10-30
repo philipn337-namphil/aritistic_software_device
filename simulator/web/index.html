@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>예소 가상 디바이스</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="layout">
+  <section class="stage">
+    <div class="device" id="device">
+      <div class="bezel">
+        <canvas id="screen" width="240" height="320" aria-label="디바이스 화면"></canvas>
+        <div class="screen-off" id="screenOff" hidden>
+          <span>절전 중</span>
+          <small>아무 버튼이나 누르면 깨어납니다</small>
+        </div>
+        <div class="offline" id="offline" hidden>시뮬레이터 연결 끊김</div>
+      </div>
+      <div class="controls">
+        <button class="hw" data-bit="0" aria-label="이전 (D4)"><span class="glyph">◀</span><span class="pin">D4 이전</span></button>
+        <button class="hw primary" data-bit="1" aria-label="확인 (D5)"><span class="glyph">●</span><span class="pin">D5 확인</span></button>
+        <button class="hw" data-bit="2" aria-label="다음 (D6)"><span class="glyph">▶</span><span class="pin">D6 다음</span></button>
+      </div>
+      <div class="buzzer" id="buzzer" title="부저">♪</div>
+    </div>
+    <p class="hint">키보드: <kbd>←</kbd>/<kbd>A</kbd> 이전 · <kbd>Space</kbd>/<kbd>S</kbd> 확인 · <kbd>→</kbd>/<kbd>D</kbd> 다음</p>
+  </section>
+
+  <aside class="panel">
+    <header class="panel-head">
+      <h1>예소 루틴 디바이스 <span class="tag">가상</span></h1>
+      <p id="version" class="muted">—</p>
+    </header>
+
+    <section class="card">
+      <h2>상태</h2>
+      <dl class="stats" id="stats"></dl>
+    </section>
+
+    <section class="card">
+      <h2>서버 연동</h2>
+      <p class="muted small" id="endpoint">—</p>
+      <form id="pairForm" class="row">
+        <input id="pairCode" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" placeholder="페어링 코드 10자리" autocomplete="off">
+        <button type="submit">페어링</button>
+      </form>
+      <div class="row wrap">
+        <button data-cmd="api sync">지금 동기화</button>
+        <button data-cmd="api status">API 상태</button>
+        <button data-cmd="api reset-uuid" data-confirm="기기 UUID를 지우고 페어링을 해제할까요?">UUID 초기화</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>데모 (서버 없이, RAM 전용)</h2>
+      <div class="row wrap">
+        <button data-cmd="demo start">데모 시작</button>
+        <button data-cmd="demo stop">데모 종료</button>
+        <button data-cmd="demo advance 60">+1분</button>
+        <button data-cmd="demo advance 600">+10분</button>
+        <button data-cmd="demo advance 3600">+1시간</button>
+        <button data-cmd="demo advance 7200">+2시간</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>기기 설정</h2>
+      <div class="row wrap">
+        <button data-toggle="wifi">Wi-Fi</button>
+        <button data-toggle="motion">모션</button>
+        <button data-toggle="idle">자동 절전</button>
+        <button data-toggle="sound">소리</button>
+        <button data-cmd="sleep 30">30초 절전</button>
+        <button data-cmd="reboot">재부팅</button>
+      </div>
+    </section>
+
+    <section class="card console-card">
+      <h2>USB 콘솔</h2>
+      <pre id="console" class="console" aria-live="polite"></pre>
+      <form id="cmdForm" class="row">
+        <input id="cmd" placeholder="명령 입력 (help)" autocomplete="off" spellcheck="false">
+        <button type="submit">전송</button>
+      </form>
+    </section>
+  </aside>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
