@@ -3,39 +3,35 @@
 #include "ContextualGestures.h"
 
 namespace routine::input {
-// Delay the 800ms Confirm until release so a 5s setup hold cannot confirm a
-// routine or feed a character on its way to opening network settings.
+// A 5s hold of the Confirm (middle) button opens network settings. Taps fire
+// only on a short release, so the hold itself never confirms a routine.
 class SystemGestures {
  public:
   static constexpr uint32_t kSetupHoldMs=5000;
-  void begin(uint32_t now,bool pressed,uint32_t context){
-    gestures_.begin(now,pressed,context);raw_=stable_=pressed;armed_=!pressed;
-    pressedAt_=changedAt_=now;pending_={};fired_=requested_=false;
+  static constexpr uint8_t kSetupMask=1u<<static_cast<uint8_t>(Control::Secondary);
+  void begin(uint32_t now,uint8_t pressed,uint32_t context){
+    gestures_.begin(now,pressed,context);
+    const bool held=pressed&kSetupMask;raw_=stable_=held;armed_=!held;
+    pressedAt_=changedAt_=now;fired_=requested_=false;
   }
-  InputEvent update(uint32_t now,bool pressed,uint32_t context){
-    if(pressed!=raw_){raw_=pressed;changedAt_=now;}
-    bool released=false;
+  InputEvent update(uint32_t now,uint8_t pressed,uint32_t context){
+    const bool held=pressed&kSetupMask;
+    if(held!=raw_){raw_=held;changedAt_=now;}
     if(raw_!=stable_&&uint32_t(now-changedAt_)>=Button::kDebounceMs){
       stable_=raw_;
-      if(stable_){pressedAt_=now;fired_=false;}else {released=true;armed_=true;}
+      if(stable_){pressedAt_=now;fired_=false;}else armed_=true;
     }
-    if(!context||pending_.context!=context)pending_={};
     const auto event=gestures_.update(now,pressed,context);
-    if(armed_&&stable_&&pressed&&!fired_&&uint32_t(now-pressedAt_)>=kSetupHoldMs){
-      fired_=requested_=true;pending_={};gestures_.begin(now,true,context);return {};
-    }
-    if(released){
-      if(pending_.intent!=Intent::None&&!fired_){const auto result=pending_;pending_={};return result;}
+    if(armed_&&stable_&&held&&!fired_&&uint32_t(now-pressedAt_)>=kSetupHoldMs){
+      fired_=requested_=true;gestures_.begin(now,pressed,context);return {};
     }
     if(fired_)return {};
-    if(event.intent==Intent::Confirm){pending_=event;return {};}
     return event;
   }
   bool takeSetup(){const bool value=requested_;requested_=false;return value;}
-  bool busy()const{return gestures_.busy()||pending_.intent!=Intent::None;}
+  bool busy()const{return gestures_.busy();}
  private:
   ContextualGestures gestures_;
-  InputEvent pending_{};
   uint32_t pressedAt_=0,changedAt_=0;
   bool raw_=false,stable_=false,armed_=true,fired_=false,requested_=false;
 };

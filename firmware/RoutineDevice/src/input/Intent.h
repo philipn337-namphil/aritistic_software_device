@@ -70,4 +70,29 @@ class Gestures {
   bool pending_ = false, secondStarted_ = false;
   uint32_t releasedAt_ = 0;
 };
+
+// Bit i of `pressed` is Control(i). A tap fires on release; holds are ignored.
+class ThreeButtonGestures {
+ public:
+  static constexpr uint8_t kCount = 3;
+  void begin(uint32_t now, uint8_t pressed) {
+    for (uint8_t i = 0; i < kCount; ++i) buttons_[i].begin(now, pressed & (1u << i));
+  }
+  Intent update(uint32_t now, uint8_t pressed) {
+    Intent result = Intent::None;
+    for (uint8_t i = 0; i < kCount; ++i) {
+      // Every button is updated each tick; a second simultaneous tap is dropped.
+      const auto event = buttons_[i].update(now, pressed & (1u << i));
+      if (event == ButtonEvent::ShortPress && result == Intent::None)
+        result = mapThreeButtons(static_cast<Control>(i), Gesture::Tap);
+    }
+    return result;
+  }
+  bool busy() const {
+    for (const auto& button : buttons_) if (button.busy()) return true;
+    return false;
+  }
+ private:
+  Button buttons_[kCount];
+};
 }

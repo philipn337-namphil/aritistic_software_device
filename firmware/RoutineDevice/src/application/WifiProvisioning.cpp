@@ -47,6 +47,11 @@ bool privateIpv4(const char* first,const char* last){
   }
   return parts[0]==10||(parts[0]==172&&parts[1]>=16&&parts[1]<=31)||(parts[0]==192&&parts[1]==168);
 }
+bool sameUrl(const char* url,const char* expected){
+  if(!url||!expected||!*expected)return false;
+  const size_t n=std::strlen(expected);
+  return !std::strncmp(url,expected,n)&&(!url[n]||(url[n]=='/'&&!url[n+1]));
+}
 }
 bool validServerUrl(const char* url,bool allowLocalHttp){
   if(!url||std::strlen(url)>180)return false;
@@ -67,12 +72,13 @@ bool validServerUrl(const char* url,bool allowLocalHttp){
   if(colon){unsigned port=0;if(colon+1==end||end-colon>6)return false;for(const char* p=colon+1;p!=end;++p){if(*p<'0'||*p>'9')return false;port=port*10+unsigned(*p-'0');}if(!port||port>65535)return false;}
   return https||privateIpv4(host,hostEnd);
 }
-bool parseConfig(const char* bytes,size_t size,Config& out,bool allowLocalHttp){
+bool parseConfig(const char* bytes,size_t size,Config& out,bool allowLocalHttp,const char* developmentUrl){
   out.clear();if(!bytes||size>Frame::kCapacity||!unicodeEscapes(bytes,size))return false;
   JsonDocument doc;if(!api::readJson(doc,bytes,size,2)||!doc.is<JsonObject>())return false;
   const char* ssid=api::jsonText(doc["ssid"]);const char* password=api::jsonText(doc["password"]);
   const char* code=api::jsonText(doc["pairingCode"]);const char* url=api::jsonText(doc["serverUrl"]);
-  if(!ssid||!*ssid||std::strlen(ssid)>32||!utf8(ssid)||!password||!code||std::strlen(code)!=10||!validServerUrl(url,allowLocalHttp))return false;
+  if(!ssid||!*ssid||std::strlen(ssid)>32||!utf8(ssid)||!password||!code||std::strlen(code)!=10||!url||
+     !(validServerUrl(url,allowLocalHttp)||sameUrl(url,developmentUrl)))return false;
   const size_t n=std::strlen(password);if(n&&(n<8||n>63))return false;
   for(size_t i=0;i<n;++i)if(static_cast<unsigned char>(password[i])<32||static_cast<unsigned char>(password[i])>126)return false;
   for(unsigned i=0;i<10;++i)if(code[i]<'0'||code[i]>'9')return false;

@@ -14,7 +14,8 @@ struct Config {
 };
 // HTTP is accepted only for numeric RFC1918 IPv4 origins in an explicit dev build.
 bool validServerUrl(const char* url,bool allowLocalHttp);
-bool parseConfig(const char* bytes,size_t size,Config& out,bool allowLocalHttp);
+// developmentUrl, when given, is also accepted verbatim (one trailing '/' allowed).
+bool parseConfig(const char* bytes,size_t size,Config& out,bool allowLocalHttp,const char* developmentUrl=nullptr);
 
 enum class FrameResult { Waiting,Complete,Invalid };
 class Frame {
