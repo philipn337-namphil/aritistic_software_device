@@ -11,7 +11,7 @@
 namespace routine::platform {
 void HardwareCheckRuntime::help() {
   Serial.println("RoutineDevice: HARDWARE CHECK v0.3 (sample growth/icons; live clock)");
-  Serial.println("D3: tap=Next/theme; double tap=Previous/80ms beep; hold 800ms=Confirm/40ms beep");
+  Serial.println("Buttons: D4=Previous/80ms beep; D5=Confirm/40ms beep; D6=Next/theme");
   Serial.println("Commands (newline): theme pink | theme dark | progress 0..100 | time HH:MM | time off | beep | help");
   Serial.println("Device: status | sync | time auto | sleep 1..86400 | idle 1..3600 | idle off");
   Serial.println("Wi-Fi initial setup: tools/configure-wifi.ps1 (credentials are never echoed)");
@@ -106,7 +106,7 @@ void HardwareCheckRuntime::updateClockView() {
 }
 void HardwareCheckRuntime::sleep(uint32_t seconds) {
   if(assets_.active()||!assets_.ready())return;
-  Serial.printf("Sleep: %lus maximum; D3 wakes; time sync follows every return\n", static_cast<unsigned long>(seconds));
+  Serial.printf("Sleep: %lus maximum; D4/D5/D6 wake; time sync follows every return\n", static_cast<unsigned long>(seconds));
   Serial.flush();
   // S3 hardware CDC cannot respond during manual light sleep. An explicit
   // detach/attach lets the host enumerate it again without resetting product RAM.

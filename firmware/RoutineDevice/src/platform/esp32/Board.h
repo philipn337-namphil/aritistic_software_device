@@ -28,14 +28,15 @@ class Board {
   input::InputEvent pollInput();
   input::Intent pollIntent(){return pollInput().intent;} // Diagnostic mode.
   void inputContext(uint32_t context){inputContext_=context;}
-  bool inputBusy() const { return gestureBusy_.load() || pressed() || (inputQueue_ && uxQueueMessagesWaiting(inputQueue_)); }
+  bool inputBusy() const { return gestureBusy_.load() || pressed() != 0 || (inputQueue_ && uxQueueMessagesWaiting(inputQueue_)); }
   SleepResult lightSleep(uint32_t seconds);
   void updateBuzzer();
   void beep(uint16_t durationMs);
   bool canPresent() const { return !buzzer_.active(); }
  private:
-  bool pressed() const;
+  uint8_t pressed() const;  // Bit mask over hardware::kButtons.
   void buzzerLevel(bool active);
+  void disableButtonWakeup();
   static void inputTask(void* context);
   Adafruit_ST7789 display_;
   uint16_t* pixels_ = nullptr;

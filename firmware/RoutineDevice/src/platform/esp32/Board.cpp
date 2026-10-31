@@ -14,7 +14,7 @@ bool Board::begin() {
   gpio_set_level(static_cast<gpio_num_t>(hardware::kBuzzer), hardware::kBuzzerActiveHigh ? 0 : 1);
   pinMode(hardware::kBuzzer, OUTPUT);
   buzzerLevel(false);
-  pinMode(hardware::kButton, hardware::kButtonActiveLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+  for (const auto pin : hardware::kButtons) pinMode(pin, hardware::kButtonActiveLow ? INPUT_PULLUP : INPUT_PULLDOWN);
   constexpr size_t bytes = kPanelWidth * kPanelHeight * sizeof(uint16_t);
   pixels_ = static_cast<uint16_t*>(heap_caps_malloc(bytes, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
   if (!pixels_) pixels_ = static_cast<uint16_t*>(heap_caps_malloc(bytes, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
@@ -32,8 +32,11 @@ bool Board::begin() {
 void Board::present() {
   if (pixels_) display_.drawRGBBitmap(0, 0, pixels_, kPanelWidth, kPanelHeight);
 }
-bool Board::pressed() const {
-  return digitalRead(hardware::kButton) == (hardware::kButtonActiveLow ? LOW : HIGH);
+uint8_t Board::pressed() const {
+  uint8_t mask = 0;
+  for (uint8_t i = 0; i < hardware::kButtonCount; ++i)
+    if (digitalRead(hardware::kButtons[i]) == (hardware::kButtonActiveLow ? LOW : HIGH)) mask |= uint8_t(1u << i);
+  return mask;
 }
 void Board::armButton() {
   if(inputTask_)vTaskSuspend(inputTask_);
@@ -61,12 +64,14 @@ input::InputEvent Board::pollInput() {
 SleepResult Board::lightSleep(uint32_t seconds) {
   if (inputBusy() || buzzer_.active() || !seconds || seconds > 86400)
     return {ESP_ERR_INVALID_STATE, ESP_SLEEP_WAKEUP_UNDEFINED};
-  const auto pin = static_cast<gpio_num_t>(hardware::kButton);
-  esp_err_t error = gpio_wakeup_enable(pin, hardware::kButtonActiveLow ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
+  // Any of the three buttons wakes the device.
+  esp_err_t error = ESP_OK;
+  for (const auto pin : hardware::kButtons)
+    if (error == ESP_OK) error = gpio_wakeup_enable(static_cast<gpio_num_t>(pin), hardware::kButtonActiveLow ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
   if (error == ESP_OK) error = esp_sleep_enable_gpio_wakeup();
   if (error == ESP_OK) error = esp_sleep_enable_timer_wakeup(uint64_t(seconds) * 1000000ULL);
   if (error != ESP_OK) {
-    gpio_wakeup_disable(pin);
+    disableButtonWakeup();
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
     return {error, ESP_SLEEP_WAKEUP_UNDEFINED};
@@ -84,10 +89,13 @@ SleepResult Board::lightSleep(uint32_t seconds) {
   delay(120);
   present();
   display_.enableDisplay(true);
-  gpio_wakeup_disable(pin);
+  disableButtonWakeup();
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
   return {error, cause};
+}
+void Board::disableButtonWakeup() {
+  for (const auto pin : hardware::kButtons) gpio_wakeup_disable(static_cast<gpio_num_t>(pin));
 }
 void Board::buzzerLevel(bool active) {
   digitalWrite(hardware::kBuzzer, active == hardware::kBuzzerActiveHigh ? HIGH : LOW);

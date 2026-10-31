@@ -5,13 +5,14 @@
 #include "DeviceNetwork.h"
 #include <atomic>
 #if ROUTINE_BLE_DEVELOPMENT
-#include <esp_gatts_api.h>
-#include <esp_gap_ble_api.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
+class BLEServer;
+class BLECharacteristic;
 #endif
 
 namespace routine::platform {
+struct BleCallbacks;
 class BleProvisioning {
  public:
   bool start();
@@ -22,19 +23,17 @@ class BleProvisioning {
   const char* status()const{return status_;}
  private:
 #if ROUTINE_BLE_DEVELOPMENT
+  // NimBLE host-task callbacks only queue bytes; parsing runs in tick().
+  friend struct BleCallbacks;
   struct Event {uint8_t kind=0,size=0;uint8_t data[20]{};};
-  static void gap(esp_gap_ble_cb_event_t event,esp_ble_gap_cb_param_t* param);
-  static void gatt(esp_gatts_cb_event_t event,esp_gatt_if_t interface,esp_ble_gatts_cb_param_t* param);
   void advertise();
   void report(const char* status);
   void post(const Event& event);
   QueueHandle_t queue_=nullptr;
   std::atomic<bool> overflow_{false},linked_{false},failed_{false};
-  std::atomic<uint8_t> advertisementReady_{0};
   std::atomic<uint16_t> connection_{0xffff};
-  uint16_t handles_[6]{};
-  esp_gatt_if_t interface_=ESP_GATT_IF_NONE;
-  std::atomic<bool> subscribed_{false};
+  BLEServer* server_=nullptr;
+  BLECharacteristic* statusCharacteristic_=nullptr;
   provisioning::Frame frame_;
   provisioning::Config pending_;
   bool joining_=false;

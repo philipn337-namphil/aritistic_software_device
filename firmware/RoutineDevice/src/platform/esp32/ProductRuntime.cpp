@@ -35,8 +35,8 @@ void ProductRuntime::begin() {
   setupRequested_=kBleDevelopment&&!clock_.configured();
   Preferences uiSettings;if(uiSettings.begin("routine-ui",true))motion_.enable(uiSettings.getBool("motion",true));
   Serial.printf("RoutineDevice PRODUCT v%s storage-mounted=%d load=%u assets=%d\n",kFirmwareVersion,mounted,unsigned(loaded),assets_.ready());
-  Serial.println("D3 tap=Next; double=Previous; hold800=Confirm. help for USB commands.");
-  if(kBleDevelopment)Serial.println("BLE DEVELOPMENT: plaintext setup; D3 hold5s=settings; hold800+release=Confirm; local HTTP enabled");
+  Serial.println("Buttons: D4=Previous, D5=Confirm, D6=Next. help for USB commands.");
+  if(kBleDevelopment)Serial.println("BLE DEVELOPMENT: plaintext setup; D5 hold5s=settings; local HTTP enabled");
   status();
 }
 void ProductRuntime::status() {
@@ -206,7 +206,7 @@ void ProductRuntime::tick(){
       ui::drawing::text(board_.pixels(),ble_.name(),120,100,18,0);
       ui::drawing::text(board_.pixels(),ble_.status(),120,150,18,0);
       ui::drawing::text(board_.pixels(),"Open the app",120,200,16,0);
-      ui::drawing::text(board_.pixels(),"D3 hold 5s: close",120,245,16,0);
+      ui::drawing::text(board_.pixels(),"D5 hold 5s: close",120,245,16,0);
       ui::drawing::text(board_.pixels(),"DEVELOPMENT",120,290,16,0xf800);
       board_.present();shownSetupStatus_=ble_.status();dirty_=false;
     }

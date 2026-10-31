@@ -6,4 +6,6 @@
 #endif
 namespace routine::platform {
 inline constexpr bool kBleDevelopment=ROUTINE_BLE_DEVELOPMENT!=0;
+// Plain-HTTP integration server; trusted only in the BLE development build.
+inline constexpr char kDevelopmentServerUrl[]="http://52.79.82.17";
 }

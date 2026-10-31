@@ -18,8 +18,6 @@
 
 namespace routine::platform {
 namespace {
-constexpr const char* kDevelopmentServerUrl = "http://52.79.82.17";
-
 bool allowsDevelopmentHttp(const char* url){
   return kBleDevelopment&&url&&!std::strcmp(url,kDevelopmentServerUrl);
 }
@@ -59,7 +57,7 @@ void DeviceNetwork::begin(){
   status_=settings_.claimUncertain?Status::ClaimUncertain:!settings_.endpoint[0]?Status::Unconfigured:settings_.uuid[0]?Status::Ready:Status::Unpaired;
 }
 bool DeviceNetwork::acceptProvisioning(const provisioning::Config& config){
-  if(!kBleDevelopment||!storeReady_||busy()||settings_.claimUncertain||!api::validPairingCode(config.pairingCode)||!provisioning::validServerUrl(config.serverUrl,true))return false;
+  if(!kBleDevelopment||!storeReady_||busy()||settings_.claimUncertain||!api::validPairingCode(config.pairingCode)||(!provisioning::validServerUrl(config.serverUrl,true)&&!allowsDevelopmentHttp(config.serverUrl)))return false;
   // Existing identities never move to an app-supplied origin or get re-claimed.
   if(settings_.uuid[0])return std::strcmp(settings_.endpoint,config.serverUrl)==0;
   if(!std::strncmp(config.serverUrl,"https://",8)&&(!settings_.ca[0]||std::strcmp(settings_.endpoint,config.serverUrl)))return false;

@@ -8,14 +8,15 @@ struct InputEvent { Intent intent=Intent::None; uint32_t context=0; };
 // Context 0 blocks product input (e.g. while a new screen is being sent).
 class ContextualGestures {
  public:
-  void begin(uint32_t now,bool pressed,uint32_t context){context_=context;gestures_.begin(now,pressed);}
-  InputEvent update(uint32_t now,bool pressed,uint32_t context){
+  // `pressed` is a bit mask of the three buttons (see ThreeButtonGestures).
+  void begin(uint32_t now,uint8_t pressed,uint32_t context){context_=context;gestures_.begin(now,pressed);}
+  InputEvent update(uint32_t now,uint8_t pressed,uint32_t context){
     if(!context||context!=context_){begin(now,pressed,context);return {};}
-    return {mapSingleButton(Control::Primary,gestures_.update(now,pressed)),context_};
+    return {gestures_.update(now,pressed),context_};
   }
   bool busy()const{return gestures_.busy();}
  private:
-  Gestures gestures_;
+  ThreeButtonGestures gestures_;
   uint32_t context_=0;
 };
 }
