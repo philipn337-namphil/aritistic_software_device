@@ -25,7 +25,8 @@ void renderCatalogPage(uint16_t* dst, const application::ProductState& state,
   const uint16_t panel=theme.panel,button=theme.button;
   const auto entry=content::characterEntry(view.item,state.companion.selected);
   const auto inventory=application::foodInventory(state,uint8_t(view.item+1));
-  const bool acquired=!close && (character ? domain::collected(state.companion,entry.character,entry.stage) : inventory.acquired!=0);
+  const bool acquired=!close && (character ? domain::collected(state.companion,entry.character,entry.stage)
+                                           : inventory.acquired!=0 || content::kShowcase);
   std::fill_n(dst,kWidth*kHeight,uint16_t(0xffff));
   image(dst,*theme.topbar);
   text(dst,assets::catalogHeadingFont,"도감",39,51,0);
@@ -58,11 +59,12 @@ void renderCatalogPage(uint16_t* dst, const application::ProductState& state,
     rect(dst,35,248,170,20,panel);
     text(dst,assets::catalogDetailFont,detail,120,265,0);
   }
-  roundedRect(dst,character?69:75,269,character?113:90,39,button,19.5f);
+  // Figma 최종최종: both catalogues use the same short "선택" pill.
+  roundedRect(dst,75,269,90,39,button,19.5f);
   if (close || acquired) {
-    const char* action=close ? "확인" : character ? "다시 키우기" :
+    const char* action=close ? "확인" : character ? "선택" :
       view.screen==Screen::FoodDetail && !inventory.available ? "확인" : "선택";
-    text(dst,assets::catalogFont,action,character?126:121,296,0xffff);
+    text(dst,assets::catalogFont,action,121,296,0xffff);
   } else image(dst,assets::catalogLock);
   if (view.screen==Screen::CharacterConfirm && !close) {
     // The source catalog confirmation has no blur/veil. Its older placeholder

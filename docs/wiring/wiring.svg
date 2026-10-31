@@ -26,7 +26,7 @@
   <text x="770" y="558" font-size="14" fill="#ffffff" text-anchor="middle">ESP32-S3 Plus</text>
   <g font-size="14" font-weight="700" fill="#ffffff">
     <text x="652" y="435">D0</text><text x="652" y="477">D1</text><text x="652" y="519">D2</text>
-    <text x="652" y="561">D3</text><text x="652" y="603">D4</text><text x="652" y="645">D5</text><text x="652" y="687" fill="#777">D6</text>
+    <text x="652" y="561" fill="#777">D3</text><text x="652" y="603">D4</text><text x="652" y="645">D5</text><text x="652" y="687">D6</text>
   </g>
   <g font-size="14" font-weight="700" fill="#ffffff" text-anchor="end">
     <text x="888" y="435" fill="#777">5V</text><text x="888" y="477">GND</text><text x="888" y="519">3V3</text>
@@ -34,7 +34,7 @@
   </g>
   <g font-size="10" fill="#aaaaaa">
     <text x="680" y="435">GPIO1</text><text x="680" y="477">GPIO2</text><text x="680" y="519">GPIO3</text>
-    <text x="680" y="561">GPIO4</text><text x="680" y="603">GPIO5</text><text x="680" y="645">GPIO6</text>
+    <text x="680" y="561">GPIO4</text><text x="680" y="603">GPIO5</text><text x="680" y="645">GPIO6</text><text x="680" y="687">GPIO43</text>
   </g>
   <g font-size="10" fill="#aaaaaa" text-anchor="end">
     <text x="850" y="561">GPIO9</text><text x="855" y="603">GPIO8</text><text x="855" y="645">GPIO7</text>
@@ -58,7 +58,7 @@
     <polyline points="312,262 312,366 930,366 930,472 906,472" stroke="#222222"/>
     <polyline points="356,262 356,344 950,344 950,514 906,514" stroke="#d62828"/>
     <polyline points="444,262 444,322 970,322 970,556 906,556" stroke="#1971c2"/>
-    <polyline points="488,262 488,300 990,300 990,640 906,640" stroke="#2f9e44"/>
+    <polyline points="488,262 488,300 990,300 990,598 906,598" stroke="#2f9e44"/>
 
   </g>
   <g stroke="#d62828" stroke-width="3"><line x1="392" y1="270" x2="408" y2="286"/><line x1="408" y1="270" x2="392" y2="286"/></g>
@@ -75,30 +75,30 @@
     <text x="600" y="361" fill="#222222">GND → GND</text>
     <text x="600" y="339" fill="#d62828">VCC → 3V3</text>
     <text x="600" y="317" fill="#1971c2">SDA → D10</text>
-    <text x="720" y="295" fill="#2f9e44">SCL → D8</text>
+    <text x="720" y="295" fill="#2f9e44">SCL → D9</text>
   </g>
 
   <!-- Buttons -->
   <g stroke="#555" stroke-width="4" fill="none">
-    <polyline points="170,556 634,556"/><polyline points="170,598 634,598"/><polyline points="170,640 634,640"/>
-    <polyline points="120,556 90,556"/><polyline points="120,598 90,598"/><polyline points="120,640 90,640"/>
-    <polyline points="90,556 90,700"/>
+    <polyline points="170,598 634,598"/><polyline points="170,640 634,640"/><polyline points="170,682 634,682"/>
+    <polyline points="120,598 90,598"/><polyline points="120,640 90,640"/><polyline points="120,682 90,682"/>
+    <polyline points="90,598 90,700"/>
   </g>
   <g>
-    <g transform="translate(0,556)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
+    <g transform="translate(0,682)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
     <g transform="translate(0,598)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
     <g transform="translate(0,640)"><circle cx="120" cy="0" r="5" fill="#555"/><circle cx="170" cy="0" r="5" fill="#555"/><line x1="116" y1="-14" x2="174" y2="-14" stroke="#555" stroke-width="4"/><line x1="145" y1="-14" x2="145" y2="-24" stroke="#555" stroke-width="4"/></g>
   </g>
   <g font-size="13" font-weight="700" fill="#555">
-    <text x="420" y="551">버튼1 → D3</text><text x="420" y="593">버튼2 → D4</text><text x="420" y="635">버튼3 → D5</text>
+    <text x="400" y="593">이전 ◀ → D4</text><text x="400" y="635">확인 ● → D5</text><text x="400" y="677">다음 ▶ → D6</text>
   </g>
   <!-- GND symbol (buttons) -->
   <g stroke="#222" stroke-width="3"><line x1="72" y1="700" x2="108" y2="700"/><line x1="78" y1="708" x2="102" y2="708"/><line x1="84" y1="716" x2="96" y2="716"/></g>
   <text x="90" y="738" font-size="13" text-anchor="middle" font-weight="700">GND</text>
 
-  <!-- Buzzer circuit from D9 -->
-  <path d="M906 598 H980 A10 10 0 0 1 1000 598 H1015 V780 H1030" fill="none" stroke="#c77700" stroke-width="4" stroke-linejoin="round"/>
-  <text x="1022" y="740" font-size="13" font-weight="700" fill="#c77700">D9 → 1kΩ → B</text>
+  <!-- Buzzer circuit from D8 -->
+  <path d="M906 640 H1015 V780 H1030" fill="none" stroke="#c77700" stroke-width="4" stroke-linejoin="round"/>
+  <text x="1022" y="740" font-size="13" font-weight="700" fill="#c77700">D8 → 1kΩ → B</text>
   <!-- resistor -->
   <polyline points="1030,780 1040,780 1046,768 1058,792 1070,768 1082,792 1094,768 1100,780 1110,780" fill="none" stroke="#333" stroke-width="3"/>
   <text x="1070" y="815" font-size="14" text-anchor="middle" font-weight="700">1kΩ</text>
@@ -153,7 +153,7 @@
     <rect x="1030" y="70" width="260" height="420" rx="10" fill="#f7f2fb" stroke="#D591F2" stroke-width="2"/>
     <text x="1046" y="98" font-size="15" font-weight="700" fill="#101F24">연결표</text>
     <text x="1046" y="126" font-weight="700">디스플레이</text>
-    <text x="1046" y="148">SCL → D8 (GPIO7)</text>
+    <text x="1046" y="148">SCL → D9 (GPIO8)</text>
     <text x="1046" y="170">SDA → D10 (GPIO9)</text>
     <text x="1046" y="192">CS → D2 (GPIO3)</text>
     <text x="1046" y="214">RES → D1 (GPIO2)</text>
@@ -162,11 +162,11 @@
     <text x="1046" y="280">BL → 연결 안 함</text>
     <text x="1046" y="302">SO → 연결 안 함</text>
     <text x="1046" y="332" font-weight="700">버튼 (반대쪽 → GND)</text>
-    <text x="1046" y="354">버튼1 → D3 (GPIO4)</text>
-    <text x="1046" y="376">버튼2 → D4 (GPIO5)</text>
-    <text x="1046" y="398">버튼3 → D5 (GPIO6)</text>
+    <text x="1046" y="354">이전 → D4 (GPIO5)</text>
+    <text x="1046" y="376">확인 → D5 (GPIO6)</text>
+    <text x="1046" y="398">다음 → D6 (GPIO43)</text>
     <text x="1046" y="428" font-weight="700">부저</text>
-    <text x="1046" y="450">D9 (GPIO8) → 1kΩ → NPN B</text>
+    <text x="1046" y="450">D8 (GPIO7) → 1kΩ → NPN B</text>
     <text x="1046" y="472">(+) → 3V3 · (−) → C · E → GND</text>
   </g>
 </svg>

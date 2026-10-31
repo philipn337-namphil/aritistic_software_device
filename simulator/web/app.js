@@ -1,6 +1,6 @@
 // Thin view over the virtual device (PC host or in-page WebAssembly, see
 // device-link.js). All product behaviour runs in the firmware code.
-import { createDeviceLink, decodeFrame } from './device-link.js';
+import { createDeviceLink, decodeFrame } from './device-link.js?v=motion';
 
 const $ = (selector) => document.querySelector(selector);
 const screen = $('#screen');
@@ -149,12 +149,9 @@ $('#bindForm').addEventListener('submit', (event) => {
   const uid = $('#bindUid').value.trim().toUpperCase();
   const key = $('#bindKey').value.trim().toLowerCase();
   const id = $('#bindId').value.trim();
-  if (!/^YESO-[0-9A-F]{12}$/.test(uid)) { appendConsole('! 기기 고유번호는 YESO-로 시작하는 12자리 값입니다
-'); return; }
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(key)) { appendConsole('! 기기 접속 키 형식이 아닙니다
-'); return; }
-  if (id && !/^[0-9]+$/.test(id)) { appendConsole('! 기기 id는 숫자입니다
-'); return; }
+  if (!/^YESO-[0-9A-F]{12}$/.test(uid)) { appendConsole('! 기기 고유번호는 YESO-로 시작하는 12자리 값입니다\n'); return; }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(key)) { appendConsole('! 기기 접속 키 형식이 아닙니다\n'); return; }
+  if (id && !/^[0-9]+$/.test(id)) { appendConsole('! 기기 id는 숫자입니다\n'); return; }
   run(`api bind ${key} ${uid}${id ? ` ${id}` : ''}`);
   $('#bindKey').value = '';
 });

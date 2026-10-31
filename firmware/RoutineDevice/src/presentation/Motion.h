@@ -2,13 +2,15 @@
 #pragma once
 #include "../application/ProductView.h"
 namespace routine::ui {
-enum class MotionKind : uint8_t { None, Letter, Eating, Crying, SummaryLetter };
+enum class MotionKind : uint8_t { None, Letter, Eating, Crying, SummaryLetter, Idle };
 inline bool isTransient(MotionKind kind) {
   return kind==MotionKind::Letter || kind==MotionKind::Eating || kind==MotionKind::SummaryLetter;
 }
 struct MotionFrame { MotionKind kind=MotionKind::None; uint8_t frame=0,character=0,stage=1,food=0; };
 // Timing is a provisional presentation setting, not a product/domain rule.
-struct MotionTiming { uint16_t letterMs=100,eatingMs=260,cryingMs=180,summaryFrameMs=180; };
+struct MotionTiming { uint16_t letterMs=100,eatingMs=260,cryingMs=180,summaryFrameMs=180,idleMs=600; };
+// The last letter frame (fully open) is held this many ticks before the routine screen.
+constexpr uint8_t kLetterHoldFrames=4;
 class MotionPlayer {
  public:
   void observe(const application::ProductState&,const application::ProductView&,uint32_t now);
@@ -17,7 +19,7 @@ class MotionPlayer {
   bool enabled()const{return enabled_;}
   void skip(){active_.kind=MotionKind::None;}
   bool transient(uint32_t now)const{return isTransient(sample(now).kind);}
-  void timing(MotionTiming value){if(value.letterMs&&value.eatingMs&&value.cryingMs&&value.summaryFrameMs){timing_=value;seen_=false;skip();}}
+  void timing(MotionTiming value){if(value.letterMs&&value.eatingMs&&value.cryingMs&&value.summaryFrameMs&&value.idleMs){timing_=value;seen_=false;skip();}}
  private:
   MotionTiming timing_{};
   MotionFrame active_{},previous_{};

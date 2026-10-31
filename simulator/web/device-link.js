@@ -67,8 +67,10 @@ export function createDeviceLink({ onFrame, onScreen, onStatus, onBeep, onConnec
 
   // ---- WebAssembly ---------------------------------------------------------
   async function startWasm() {
-    const { default: createYesoModule } = await import('./wasm/yeso.js');
-    const M = await createYesoModule({ locateFile: (file) => `wasm/${file}`, print: () => {}, printErr: () => {} });
+    // Bump with every wasm rebuild so browsers do not pair a stale yeso.wasm with a new yeso.js.
+    const build = 'motion';
+    const { default: createYesoModule } = await import(`./wasm/yeso.js?v=${build}`);
+    const M = await createYesoModule({ locateFile: (file) => `wasm/${file}?v=${build}`, print: () => {}, printErr: () => {} });
     const pak = await fetch('assets/ui.pak');
     if (!pak.ok) throw new Error('assets/ui.pak missing');
     M.FS.writeFile('/ui.pak', new Uint8Array(await pak.arrayBuffer()));
@@ -117,6 +119,22 @@ export function createDeviceLink({ onFrame, onScreen, onStatus, onBeep, onConnec
       return false;
     }
   }
+  // A private demo link carries an already registered device in the fragment:
+  //   3d.html#bind=YESO-XXXXXXXXXXXX,<device_access_uuid>,<device id>
+  // The fragment never reaches the web server and is not part of the source;
+  // it is removed from the address bar once applied (the binding persists).
+  async function applyBindLink() {
+    const value = new URLSearchParams(location.hash.slice(1)).get('bind');
+    if (!value) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    const [uid = '', key = '', id = ''] = value.split(',').map((part) => part.trim());
+    if (!/^YESO-[0-9A-F]{12}$/i.test(uid) || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(key) || (id && !/^[0-9]+$/.test(id))) {
+      onConsole?.('! 연결 링크 형식이 잘못되었습니다\n', false);
+      return;
+    }
+    await runtime.command(`api bind ${key.toLowerCase()} ${uid.toUpperCase()}${id ? ` ${id}` : ''}`);
+  }
+
   (async () => {
     const forced = new URLSearchParams(location.search).get('mode');
     const mode = forced === 'host' || forced === 'wasm' ? forced : (await hostAvailable()) ? 'host' : 'wasm';
@@ -124,6 +142,7 @@ export function createDeviceLink({ onFrame, onScreen, onStatus, onBeep, onConnec
     try {
       runtime = mode === 'host' ? startHost() : await startWasm();
       if (buttons) runtime.setButtons(buttons);
+      await applyBindLink();
     } catch (error) {
       console.error(error);
       setConnected(false);

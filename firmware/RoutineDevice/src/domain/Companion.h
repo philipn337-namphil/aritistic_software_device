@@ -85,4 +85,31 @@ inline bool feedCompanion(Companion& state, uint8_t contentCount) {
   } else if (next.stage!=previous.stage) state.notice=GrowthNotice::Evolved;
   return true;
 }
+// Experience at the very start of a growth stage (1..3).
+inline uint16_t stageStart(uint8_t stage) {
+  uint16_t start=0;
+  for (uint8_t i=1;i<stage && i<=3;++i) start=uint16_t(start+kFigmaGrowth.stageTargets[i-1]);
+  return start;
+}
+// Showcase builds (simulator/web): every species and stage is collectable from
+// the start. A never-touched legacy default (sheep, no growth) moves to the
+// demo character. Returns true when the state changed and must be saved.
+inline bool unlockShowcase(Companion& state, uint8_t contentCount) {
+  if (!contentCount || contentCount > kMaxCharacters) return false;
+  bool changed=false;
+  bool untouched=state.owned==1 && state.selected==0 && state.notice==GrowthNotice::None && state.offered==kNoCharacter;
+  for (uint8_t i=0;i<kMaxCharacters && untouched;++i) if (state.experience[i]) untouched=false;
+  if (untouched && kDefaultCharacter<contentCount) {
+    state.selected=kDefaultCharacter;
+    state.experience[kDefaultCharacter]=stageStart(kDefaultStage);
+    changed=true;
+  }
+  const uint64_t all=contentCount>=64 ? ~uint64_t(0) : (uint64_t(1)<<contentCount)-1;
+  if ((state.owned&all)!=all) { state.owned|=all; changed=true; }
+  // Everything is owned now, so a pending new-character offer has no target.
+  if (state.offered!=kNoCharacter) { state.offered=kNoCharacter; changed=true; }
+  for (uint8_t i=0;i<contentCount;++i)
+    if (state.highestStage[i]<3) { state.highestStage[i]=3; changed=true; }
+  return changed;
+}
 }

@@ -26,6 +26,10 @@ LoadResult ProductController::begin() {
   view_ = {};
   now_ = {0,false};
   if (!fault_ && result==LoadResult::Loaded) migrateRewards();
+  if (!fault_ && content::kShowcase) {
+    candidate_ = state_;
+    if (domain::unlockShowcase(candidate_.companion, content::kCharacterCount)) commit();
+  }
   if (fault_) fail(); else reconcile();
   ++viewRevision_;
   return result;

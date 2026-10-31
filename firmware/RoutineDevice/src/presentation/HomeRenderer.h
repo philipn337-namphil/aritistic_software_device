@@ -11,6 +11,7 @@ struct HomeViewModel {
   uint16_t minutesOfDay = 0;
   bool showProgress = true;
   uint8_t stage = 0; // 0 retains the original diagnostic reference; product uses 1..3.
+  int8_t idleFrame = -1; // 0/1 draws the Figma "기본 모션" breathing pose instead of the still art.
 };
 constexpr int kWidth = 240;
 constexpr int kHeight = 320;

@@ -19,6 +19,10 @@ void MotionPlayer::observe(const application::ProductState& state,const applicat
       // Presentation follows an already committed meal. It never grants rewards.
       for(size_t i=0;i<state.count;++i)if(state.routines[i].run.spec.id==run_ && (state.routines[i].consumedRewards&(1u<<rewardStep_))){active_=previous_;active_.kind=MotionKind::Eating;break;}
     }
+    if(enabled_&&active_.kind==MotionKind::None&&view.screen==application::Screen::Home){
+      const auto* idle=assets::idleFrames[active_.character*3+active_.stage-1];
+      if(idle[0]&&idle[1])active_.kind=MotionKind::Idle;
+    }
   }
   screen_=view.screen;run_=run;version_=view.expectedVersion;day_=view.summary.day;page_=view.item;seen_=true;
   previous_.character=state.companion.selected;previous_.stage=domain::growthView(state.companion.experience[previous_.character]).stage;
@@ -29,7 +33,12 @@ void MotionPlayer::observe(const application::ProductState& state,const applicat
 MotionFrame MotionPlayer::sample(uint32_t now)const{
   auto result=active_;const uint32_t elapsed=now-started_;
   switch(result.kind){
-    case MotionKind::Letter:if(elapsed>=21u*timing_.letterMs)return {};result.frame=uint8_t(elapsed/timing_.letterMs);break;
+    case MotionKind::Letter:{
+      if(elapsed>=uint32_t(assets::kLetterFrames+kLetterHoldFrames)*timing_.letterMs)return {};
+      const uint32_t frame=elapsed/timing_.letterMs;
+      result.frame=uint8_t(frame<assets::kLetterFrames?frame:assets::kLetterFrames-1);break;
+    }
+    case MotionKind::Idle:result.frame=uint8_t((elapsed/timing_.idleMs)%2);break;
     case MotionKind::SummaryLetter:if(elapsed>=6u*timing_.summaryFrameMs)return {};result.frame=uint8_t(elapsed/timing_.summaryFrameMs);break;
     case MotionKind::Eating:{const auto count=assets::biteClips[result.food-1].count+1u;if(elapsed>=count*timing_.eatingMs)return {};result.frame=uint8_t(elapsed/timing_.eatingMs);break;}
     case MotionKind::Crying:result.frame=uint8_t((elapsed/timing_.cryingMs)%5);break;

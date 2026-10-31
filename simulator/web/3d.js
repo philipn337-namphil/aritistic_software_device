@@ -6,7 +6,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { createDeviceLink, decodeFrame } from './device-link.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { createDeviceLink, decodeFrame } from './device-link.js?v=motion';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -16,14 +20,15 @@ const PLA = {
   appleGreen: '#C2E189', milkyPink: '#F7CED7', babyBlue: '#A4DBE8',
 };
 // Keys: Baby Blue on the white case (as in the renders), Jade White elsewhere.
+// mark: the designer's certification print for that body colour (models/marks/).
 const COLORS = [
-  { name: 'Jade White #FFFFFF', body: PLA.jadeWhite, key: PLA.babyBlue, strap: PLA.babyBlue },
-  { name: 'Black #000000', body: PLA.black, key: PLA.jadeWhite, strap: PLA.black },
-  { name: 'Almond Yellow #F0E191', body: PLA.almondYellow, key: PLA.jadeWhite, strap: PLA.almondYellow },
-  { name: 'Lilac Purple #AE96D4', body: PLA.lilacPurple, key: PLA.jadeWhite, strap: PLA.lilacPurple },
-  { name: 'Apple Green #C2E189', body: PLA.appleGreen, key: PLA.jadeWhite, strap: PLA.appleGreen },
-  { name: 'Milky Pink #F7CED7', body: PLA.milkyPink, key: PLA.jadeWhite, strap: PLA.milkyPink },
-  { name: 'Baby Blue #A4DBE8', body: PLA.babyBlue, key: PLA.jadeWhite, strap: PLA.babyBlue },
+  { name: 'Jade White #FFFFFF', body: PLA.jadeWhite, key: PLA.babyBlue, strap: PLA.babyBlue, mark: 'jade-white' },
+  { name: 'Black #000000', body: PLA.black, key: PLA.jadeWhite, strap: PLA.black, mark: 'black' },
+  { name: 'Almond Yellow #F0E191', body: PLA.almondYellow, key: PLA.jadeWhite, strap: PLA.almondYellow, mark: 'almond-yellow' },
+  { name: 'Lilac Purple #AE96D4', body: PLA.lilacPurple, key: PLA.jadeWhite, strap: PLA.lilacPurple, mark: 'lilac-purple' },
+  { name: 'Apple Green #C2E189', body: PLA.appleGreen, key: PLA.jadeWhite, strap: PLA.appleGreen, mark: 'apple-green' },
+  { name: 'Milky Pink #F7CED7', body: PLA.milkyPink, key: PLA.jadeWhite, strap: PLA.milkyPink, mark: 'milky-pink' },
+  { name: 'Baby Blue #A4DBE8', body: PLA.babyBlue, key: PLA.jadeWhite, strap: PLA.babyBlue, mark: 'baby-blue' },
 ];
 
 // ---- renderer / scene -----------------------------------------------------
@@ -32,13 +37,17 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 // Khronos PBR Neutral keeps base colours close to the sheet values (ACES shifts hues).
 renderer.toneMapping = THREE.NeutralToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 0.92;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+// The CAD materials are one flat colour; the form reads through the lighting
+// (as in the designer's renders): a weak environment so faces turned away from
+// the key light fall into shade, plus ambient occlusion in creases (below).
+scene.environmentIntensity = 0.35;
 
 const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
 const HOME = { position: new THREE.Vector3(6, 4, 30), target: new THREE.Vector3(0, 2.0, 0) };
@@ -53,13 +62,32 @@ controls.maxDistance = 48;
 controls.minPolarAngle = 0.35;
 controls.maxPolarAngle = Math.PI - 0.6;
 
-const key = new THREE.DirectionalLight(0xffffff, 1.6);
-key.position.set(8, 14, 12);
+// Matched to the designer's renders (55 front, 29 three-quarter): a key light
+// high in front so the flat face stays even while the carved sides fall off and
+// the screen recess takes a shadow on its top edge; weak fill, rim from behind.
+const key = new THREE.DirectionalLight(0xffffff, 2.3);
+key.position.set(2, 14, 13);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 Object.assign(key.shadow.camera, { left: -10, right: 10, top: 12, bottom: -10, near: 1, far: 50 });
-key.shadow.radius = 6;
-scene.add(key, new THREE.HemisphereLight(0xffffff, 0xd9c8ea, 0.6));
+key.shadow.radius = 4;
+key.shadow.bias = -0.0005;
+key.shadow.normalBias = 0.03;
+const fill = new THREE.DirectionalLight(0xf3eeff, 0.3);
+fill.position.set(-10, 2, 6);
+const rim = new THREE.DirectionalLight(0xffffff, 0.6);
+rim.position.set(-4, 10, -14);
+const sky = new THREE.HemisphereLight(0xffffff, 0x8f8499, 0.3);
+scene.add(key, fill, rim, sky);
+
+// Ambient occlusion darkens the carved sides, key wells and seams.
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const ao = new GTAOPass(scene, camera, 1, 1);
+ao.updateGtaoMaterial({ radius: 0.45, distanceExponent: 1.5, thickness: 1, scale: 1.2 });
+ao.blendIntensity = 0.7;
+composer.addPass(ao);
+composer.addPass(new OutputPass());
 
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.ShadowMaterial({ opacity: 0.13 }));
 ground.rotation.x = -Math.PI / 2;
@@ -124,46 +152,27 @@ function mergePart(node, material) {
   return mesh;
 }
 
-// Product-code sticker on the left side of the back shell, toward the key end.
+// Certification print on the left side of the back shell, toward the key end:
+// the designer's artwork (800 × 160, transparent), one tint per body colour.
 // Text runs bottom → top with its top edge toward the back, as on the unit.
-function stickerTexture() {
-  const h = 272, c = document.createElement('canvas');
-  const g = c.getContext('2d');
-  const font = (size, weight = 500) => `${weight} ${size}px "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`;
-  const LINE1 = '·제품코드: 260A01 ·안전확인번호: SC-26-0147 ·모델명: T-01';
-  g.font = font(50);
-  const w = Math.ceil(g.measureText(LINE1).width) + 72;
-  c.width = w; c.height = h;
-  g.fillStyle = '#f6f4f0';
-  g.beginPath(); g.roundRect(0, 0, w, h, 18); g.fill();
-  g.fillStyle = '#3a3836'; g.strokeStyle = '#3a3836';
-  const line = (text, x, y, size) => {
-    g.font = font(size);
-    const scale = Math.min(1, (w - x - 24) / g.measureText(text).width);
-    g.save(); g.translate(x, y); g.scale(scale, 1); g.fillText(text, 0, 0); g.restore();
-  };
-  line(LINE1, 36, 66, 50);
-  // KC mark: a K beside an open C, then the CE mark.
-  g.lineWidth = 9;
-  g.beginPath(); g.moveTo(52, 98); g.lineTo(52, 178); g.stroke();
-  g.beginPath(); g.moveTo(96, 98); g.lineTo(56, 138); g.lineTo(96, 178); g.stroke();
-  g.beginPath(); g.arc(132, 138, 36, Math.PI * 0.28, Math.PI * 1.72, false); g.stroke();
-  g.beginPath(); g.arc(232, 138, 38, Math.PI * 0.5, Math.PI * 1.5, false); g.stroke();
-  g.beginPath(); g.arc(322, 138, 38, Math.PI * 0.5, Math.PI * 1.5, false); g.stroke();
-  g.beginPath(); g.moveTo(290, 138); g.lineTo(320, 138); g.stroke();
-  line('R-RM-26-0147  · ·FCC ID : 2A6X-0147', 400, 134, 48);
-  line('R-TOMO-TM001', 400, 194, 48);
-  line('MADE IN KOREA     hello@tomo-lab.com', 36, 254, 46);
-  const texture = new THREE.CanvasTexture(c);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  return { texture, aspect: w / h };
+const MARK_ASPECT = 800 / 160;
+const markTextures = new Map();
+function markTexture(name) {
+  if (!markTextures.has(name)) {
+    const texture = new THREE.TextureLoader().load(`models/marks/${name}.png`);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    markTextures.set(name, texture);
+  }
+  return markTextures.get(name);
 }
-// The label is wrapped onto the real back-shell surface by casting rays at it.
+const markMaterial = new THREE.MeshStandardMaterial({
+  transparent: true, roughness: 0.6, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2,
+});
+// The print is wrapped onto the real back-shell surface by casting rays at it.
 function addSticker(backShell) {
-  const label = stickerTexture();
   const S = { height: 0.7, y: -1.5, z: -1.05 };
-  S.length = S.height * label.aspect;
+  S.length = S.height * MARK_ASPECT;
   const geometry = new THREE.PlaneGeometry(S.length, S.height, 48, 6);
   const p = geometry.attributes.position, ray = new THREE.Raycaster(), origin = new THREE.Vector3();
   device.updateMatrixWorld(true);
@@ -176,18 +185,26 @@ function addSticker(backShell) {
     ray.set(origin, direction);
     const hit = ray.intersectObject(backShell, false)[0];
     if (hit) lastX = hit.point.applyMatrix4(toLocal).x;
-    p.setXYZ(i, lastX - 0.008, y, z);
+    p.setXYZ(i, lastX - 0.004, y, z);
   }
   geometry.computeVertexNormals();
-  device.add(new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map: label.texture, roughness: 0.55, side: THREE.DoubleSide })));
+  const mark = new THREE.Mesh(geometry, markMaterial);
+  mark.receiveShadow = true;
+  device.add(mark);
 }
 
 // Lanyard from the strap CAD export (models/strap.glb, metres): node 0 is the
-// cord loop, node 1 the metal ring (Ø11.5 mm, centre at -3.8, -110, -2.7 mm).
-// The ring is hung at the top centre of the case, mid-thickness.
-const STRAP = { url: 'models/strap.glb', cord: 0, ring: 1, ringCenter: [-0.0038, -0.110, -0.0027], hangAt: [0, 0.0447, 0.078] };
+// cord loop, node 1 the split ring (Ø11.6 mm, 1.5 mm wire, in the XY plane,
+// centre at -3.8, -110, -2.7 mm). The export is twice the size shown in the
+// designer's renders (front render 55: ring Ø5.8 mm, 0.7 mm wire on the 60 mm
+// wide case; renders 26/30: whole strap ≈ 120 mm), so it is drawn at half
+// scale, parts kept in place. The ring threads the two lanyard holes in the
+// case top (x ±1.9 mm, z 80.6 mm, bridge underside y 38.8 mm) and stands
+// ≈ 4 mm above it, as in render 55.
+const STRAP = { url: 'models/strap.glb', cord: 0, ring: 1, scale: 0.5, ringCenter: [-0.0038, -0.110, -0.0027], hangAt: [0, 0.0410, 0.0806] };
 const strapGroup = new THREE.Group();
-strapGroup.position.set(...STRAP.hangAt.map((v, i) => v - STRAP.ringCenter[i]));
+strapGroup.scale.setScalar(STRAP.scale);
+strapGroup.position.set(...STRAP.hangAt.map((v, i) => v - STRAP.ringCenter[i] * STRAP.scale));
 model.add(strapGroup);
 const strapMaterial = new THREE.MeshPhysicalMaterial({ roughness: 0.55, clearcoat: 0.3 });
 const ringMaterial = new THREE.MeshStandardMaterial({ color: '#dfe3ea', metalness: 0.9, roughness: 0.2 });
@@ -230,6 +247,8 @@ function applyColor(index) {
   bodyMaterial.color.set(c.body);
   keyMaterial.color.set(c.key);
   strapMaterial.color.set(c.strap);
+  markMaterial.map = markTexture(c.mark);
+  markMaterial.needsUpdate = true;
   document.querySelectorAll('.swatch').forEach((s, i) => s.setAttribute('aria-checked', String(i === index)));
   try { localStorage.setItem('yeso-3d-color', String(index)); } catch { /* optional */ }
 }
@@ -354,6 +373,8 @@ $('#reset').addEventListener('click', () => { resetFrom = { t: 0, p: camera.posi
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h, false);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(w, h);
   camera.aspect = w / h;
   // Keep the whole device visible on narrow (portrait) screens.
   const portrait = w / h < 0.8;
@@ -369,6 +390,7 @@ resize();
 window.__yeso3d = {
   view(position, target = [0, 0, 0]) { camera.position.set(...position); controls.target.set(...target); controls.update(); },
   turn(y) { device.rotation.y = y; },
+  tune: { renderer, scene, key, fill, rim, sky, ao },
 };
 
 const clock = new THREE.Clock();
@@ -389,5 +411,5 @@ renderer.setAnimationLoop(() => {
     if (resetFrom.t >= 1) resetFrom = null;
   }
   controls.update();
-  renderer.render(scene, camera);
+  composer.render(dt);
 });

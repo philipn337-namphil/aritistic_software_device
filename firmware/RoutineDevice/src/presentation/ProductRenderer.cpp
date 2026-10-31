@@ -173,17 +173,12 @@ void renderDeviceStatus(uint16_t* dst,bool wifiConnected,int batteryPercent) {
 void renderProduct(uint16_t* dst, const application::ProductState& state, const application::ProductView& view, bool clockSet, uint16_t minutes,MotionFrame motion) {
   const auto& theme=assets::characterTheme(state.companion.selected);
   const auto* record = view.routine >= 0 && view.routine < state.count ? &state.routines[size_t(view.routine)] : nullptr;
-  if(motion.kind==MotionKind::Letter&&motion.character<10&&motion.stage>=1&&motion.stage<=3&&motion.frame<21){
+  if(motion.kind==MotionKind::Letter&&motion.character<10&&motion.stage>=1&&motion.stage<=3&&motion.frame<assets::kLetterFrames){
+    // Figma "편지모션": each species has its own sheet. Frame 0 is the letter at the
+    // speech bubble over the companion; later frames grow and open it on the bare background.
     const auto& movingTheme=assets::characterTheme(motion.character);image(dst,*movingTheme.background);
-    const auto* letter=assets::letterFrames[assets::characterLetter[motion.character]][motion.frame<6?0:motion.frame-6];
-    if(motion.frame<6){
-      const auto* art=assets::homeCharacterArt[motion.character*3+motion.stage-1];
-      drawImageAt(dst,*art,art->x,art->y,art->width,art->height,uint8_t(255*(5-motion.frame)/5));
-      const int width=44+(int(letter->width)-44)*motion.frame/5,height=width*letter->height/letter->width;
-      const int x=192-(192-(int(letter->x)+letter->width/2))*motion.frame/5;
-      const int bottom=104+(320-104)*motion.frame/5;
-      drawImageAt(dst,*letter,x-width/2,bottom-height,width,height);
-    }else image(dst,*letter);
+    if(!motion.frame)image(dst,*assets::homeCharacterArt[motion.character*3+motion.stage-1]);
+    if(const auto* letter=assets::letterFrames[motion.character][motion.frame])image(dst,*letter);
     image(dst,*movingTheme.topbar);clock(dst,clockSet,minutes);return;
   }
   if(motion.kind==MotionKind::Eating&&motion.character<10&&motion.stage>=1&&motion.stage<=3&&motion.food>=1&&motion.food<=31){
@@ -233,7 +228,8 @@ void renderProduct(uint16_t* dst, const application::ProductState& state, const 
   }
   const auto character = state.companion.selected;
   const auto growth=domain::growthView(state.companion.experience[character]);
-  renderHome(dst, {static_cast<Theme>(character), uint8_t(100*growth.progress/growth.target), clockSet, minutes, view.screen==Screen::Home,growth.stage});
+  renderHome(dst, {static_cast<Theme>(character), uint8_t(100*growth.progress/growth.target), clockSet, minutes, view.screen==Screen::Home,growth.stage,
+                   int8_t(motion.kind==MotionKind::Idle&&view.screen==Screen::Home?motion.frame:-1)});
   switch (view.screen) {
     case Screen::Home: break;
     case Screen::StepSaved:
