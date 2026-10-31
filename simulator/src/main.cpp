@@ -1,5 +1,7 @@
 // Virtual device host: runs the firmware's product logic in SimRuntime and
 // serves the web page plus a small HTTP API on one thread (no locking needed).
+// PC only; the browser build uses wasm_main.cpp instead.
+#ifndef __EMSCRIPTEN__
 #include "SimRuntime.h"
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -143,3 +145,4 @@ int main(int argc,char** argv){
     device->tick();
   }
 }
+#endif

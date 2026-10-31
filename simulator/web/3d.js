@@ -277,6 +277,7 @@ const link = createDeviceLink({
   },
   onBeep: beep,
   onConnection(ok) { $('#offline').hidden = ok; },
+  onMode(mode) { $('.brand p').textContent = mode === 'wasm' ? '실제 펌웨어가 이 브라우저 안에서 동작합니다' : '실제 펌웨어로 동작하는 가상 기기'; },
 });
 
 // ---- input ----------------------------------------------------------------

@@ -41,6 +41,27 @@ PowerShell에서 저장소 루트 기준:
 **필요한 것:** MSYS2 g++ (`C:\msys64\ucrt64\bin`, 이미 설치됨), Git Bash, Python(모의 서버용), 그리고 `simulator/assets/ui.pak`.
 `ui.pak`(7 MB, CRC `dad8398c`)은 이 저장소에 없어서 `Downloads\Yeso2026-master\…\assets\packed\ui.pak` 에서 복사해 두었습니다. 다른 PC에서 실행하려면 이 파일도 같이 옮겨야 합니다.
 
+### 브라우저 단독 실행 (WebAssembly)
+
+PC 프로그램 없이 웹페이지만으로 돌아가는 버전입니다. 휴대폰 시연이나 정적 호스팅(GitHub Pages 등)용입니다.
+
+1. Emscripten을 한 번 설치합니다 (PowerShell):
+   ```powershell
+   git clone https://github.com/emscripten-core/emsdk.git $HOME\emsdk
+   cd $HOME\emsdk; .\emsdk install latest; .\emsdk activate latest
+   ```
+2. 빌드합니다 (Git Bash): `simulator/scripts/build-wasm.sh`
+   - 결과는 `web/wasm/yeso.js`, `web/wasm/yeso.wasm`이고, `web/assets/ui.pak`이 함께 복사됩니다.
+3. `simulator/web` 폴더를 그대로 정적 호스팅하면 됩니다.
+   - 페이지는 PC 시뮬레이터(`/api/status`)가 응답하면 그쪽에 붙고, 없으면 WebAssembly로 실행합니다.
+   - `?mode=wasm` 또는 `?mode=host`로 강제할 수 있습니다.
+   - 기록, 페어링, 설정은 그 브라우저의 IndexedDB에 저장됩니다.
+
+**서버 연동 제약:** WebAssembly 버전은 브라우저가 서버를 직접 호출합니다.
+- `https://` 페이지에서 `http://52.79.82.17`을 부르면 브라우저가 혼합 콘텐츠로 막습니다.
+- 서버에 **HTTPS와 CORS 허용(`Access-Control-Allow-Origin`, `X-Device-Uuid` 헤더 허용)**이 필요합니다.
+- 그전까지는 데모 모드로 시연하면 됩니다. 서버 상태는 "재시도 대기"로 표시됩니다.
+
 ### 3D 기기 화면
 
 `http://localhost:8080/3d.html` (개발자 패널 상단 링크로도 이동)
@@ -166,7 +187,9 @@ simulator/
 ├── src/HttpClient.*        WinHTTP POST
 ├── src/FileSlots.*         FlashSlots 이식 (A/B 스냅샷, 세대 마커, 설정 파일)
 ├── src/Console.h           USB Serial 대체 (웹 콘솔로 전달)
-├── src/main.cpp            HTTP 서버 + 메인 루프 (단일 스레드)
+├── src/main.cpp            PC: HTTP 서버 + 메인 루프 (단일 스레드)
+├── src/wasm_main.cpp       브라우저: JavaScript에서 부르는 함수들 (sim_tick, sim_buttons …)
+├── scripts/build-wasm.sh   WebAssembly 빌드 (Emscripten)
 ├── web/                    index.html · style.css · app.js (2D + 개발자 패널)
 │                           3d.html · 3d.css · 3d.js · device-link.js (3D 기기), models/device.glb (CAD 모델)
 ├── assets/ui.pak           화면 에셋 팩 (원본 프로젝트에서 복사, git 커밋 여부 결정 필요)
