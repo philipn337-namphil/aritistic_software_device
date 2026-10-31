@@ -2,6 +2,7 @@
 #include "HomeRenderer.h"
 #include "../generated/Assets.h"
 #include "../generated/ThemeAssets.h"
+#include "../generated/MotionAssets.h"
 #include <cstdio>
 #include <cstring>
 
@@ -57,7 +58,9 @@ void renderHome(uint16_t* dst, const HomeViewModel& state) {
   const auto& theme=assets::characterTheme(uint8_t(state.theme));
   const auto stage=state.stage>=1&&state.stage<=3?state.stage:2;
   drawImage(dst,*theme.background);drawImage(dst,*theme.homeBase);
-  drawImage(dst,*assets::homeCharacterArt[(uint8_t(state.theme)<10?uint8_t(state.theme):0)*3+stage-1]);
+  const unsigned art=(uint8_t(state.theme)<10?uint8_t(state.theme):0)*3+stage-1;
+  const auto* idle=state.idleFrame>=0&&state.idleFrame<2?assets::idleFrames[art][state.idleFrame]:nullptr;
+  drawImage(dst,idle?*idle:*assets::homeCharacterArt[art]);
   const char* greeting = "좋은 하루 보내~";
   text(dst,assets::greetingFont,greeting,120*64-textWidth64(assets::greetingFont,greeting)/2,75,theme.greeting);
   char clock[16];
