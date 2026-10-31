@@ -37,7 +37,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 // Khronos PBR Neutral keeps base colours close to the sheet values (ACES shifts hues).
 renderer.toneMapping = THREE.NeutralToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 0.92;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -47,7 +47,7 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture
 // The CAD materials are one flat colour; the form reads through the lighting
 // (as in the designer's renders): a weak environment so faces turned away from
 // the key light fall into shade, plus ambient occlusion in creases (below).
-scene.environmentIntensity = 0.45;
+scene.environmentIntensity = 0.35;
 
 const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
 const HOME = { position: new THREE.Vector3(6, 4, 30), target: new THREE.Vector3(0, 2.0, 0) };
@@ -62,27 +62,30 @@ controls.maxDistance = 48;
 controls.minPolarAngle = 0.35;
 controls.maxPolarAngle = Math.PI - 0.6;
 
-// Key light high on the right, soft fill from the left, a rim from behind.
-const key = new THREE.DirectionalLight(0xffffff, 2.6);
-key.position.set(9, 14, 10);
+// Matched to the designer's renders (55 front, 29 three-quarter): a key light
+// high in front so the flat face stays even while the carved sides fall off and
+// the screen recess takes a shadow on its top edge; weak fill, rim from behind.
+const key = new THREE.DirectionalLight(0xffffff, 2.3);
+key.position.set(2, 14, 13);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 Object.assign(key.shadow.camera, { left: -10, right: 10, top: 12, bottom: -10, near: 1, far: 50 });
 key.shadow.radius = 4;
 key.shadow.bias = -0.0005;
 key.shadow.normalBias = 0.03;
-const fill = new THREE.DirectionalLight(0xf3eeff, 0.55);
-fill.position.set(-12, 4, 8);
-const rim = new THREE.DirectionalLight(0xffffff, 0.8);
+const fill = new THREE.DirectionalLight(0xf3eeff, 0.3);
+fill.position.set(-10, 2, 6);
+const rim = new THREE.DirectionalLight(0xffffff, 0.6);
 rim.position.set(-4, 10, -14);
-scene.add(key, fill, rim, new THREE.HemisphereLight(0xffffff, 0x8f8499, 0.35));
+const sky = new THREE.HemisphereLight(0xffffff, 0x8f8499, 0.3);
+scene.add(key, fill, rim, sky);
 
 // Ambient occlusion darkens the carved sides, key wells and seams.
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const ao = new GTAOPass(scene, camera, 1, 1);
-ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1, scale: 1.2 });
-ao.blendIntensity = 0.85;
+ao.updateGtaoMaterial({ radius: 0.45, distanceExponent: 1.5, thickness: 1, scale: 1.2 });
+ao.blendIntensity = 0.7;
 composer.addPass(ao);
 composer.addPass(new OutputPass());
 
@@ -191,14 +194,17 @@ function addSticker(backShell) {
 }
 
 // Lanyard from the strap CAD export (models/strap.glb, metres): node 0 is the
-// cord loop, node 1 the split ring (Ø11.5 mm, 1.5 mm wire, in the XY plane,
-// centre at -3.8, -110, -2.7 mm). Both keep the export's size and relative
-// placement; the whole strap is only moved so the ring threads the two Ø1.5 mm
-// lanyard holes in the case top (x ±1.9 mm, z 80.6 mm, bridge underside
-// y 38.8 mm): ring centre 5.05 mm (mid-wire radius) above the wire's low point.
-const STRAP = { url: 'models/strap.glb', cord: 0, ring: 1, ringCenter: [-0.0038, -0.110, -0.0027], hangAt: [0, 0.0431, 0.0806] };
+// cord loop, node 1 the split ring (Ø11.6 mm, 1.5 mm wire, in the XY plane,
+// centre at -3.8, -110, -2.7 mm). The export is twice the size shown in the
+// designer's renders (front render 55: ring Ø5.8 mm, 0.7 mm wire on the 60 mm
+// wide case; renders 26/30: whole strap ≈ 120 mm), so it is drawn at half
+// scale, parts kept in place. The ring threads the two lanyard holes in the
+// case top (x ±1.9 mm, z 80.6 mm, bridge underside y 38.8 mm) and stands
+// ≈ 4 mm above it, as in render 55.
+const STRAP = { url: 'models/strap.glb', cord: 0, ring: 1, scale: 0.5, ringCenter: [-0.0038, -0.110, -0.0027], hangAt: [0, 0.0410, 0.0806] };
 const strapGroup = new THREE.Group();
-strapGroup.position.set(...STRAP.hangAt.map((v, i) => v - STRAP.ringCenter[i]));
+strapGroup.scale.setScalar(STRAP.scale);
+strapGroup.position.set(...STRAP.hangAt.map((v, i) => v - STRAP.ringCenter[i] * STRAP.scale));
 model.add(strapGroup);
 const strapMaterial = new THREE.MeshPhysicalMaterial({ roughness: 0.55, clearcoat: 0.3 });
 const ringMaterial = new THREE.MeshStandardMaterial({ color: '#dfe3ea', metalness: 0.9, roughness: 0.2 });
@@ -384,6 +390,7 @@ resize();
 window.__yeso3d = {
   view(position, target = [0, 0, 0]) { camera.position.set(...position); controls.target.set(...target); controls.update(); },
   turn(y) { device.rotation.y = y; },
+  tune: { renderer, scene, key, fill, rim, sky, ao },
 };
 
 const clock = new THREE.Clock();
