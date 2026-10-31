@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>예소 3D 디바이스</title>
+<link rel="stylesheet" href="3d.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="scene" aria-label="예소 루틴 디바이스 3D 모델"></canvas>
+
+<header class="top">
+  <div class="brand">
+    <h1>예소 루틴 디바이스</h1>
+    <p>실제 펌웨어로 동작하는 가상 기기</p>
+  </div>
+  <div class="chip" id="chip"><span class="dot"></span><span id="chipText">연결 중</span></div>
+</header>
+
+<div class="offline" id="offline" hidden>시뮬레이터에 연결할 수 없습니다 — run.ps1 실행 여부를 확인하세요</div>
+<div class="loading" id="loading">3D 모델 불러오는 중…</div>
+
+<aside class="tools">
+  <div class="swatches" role="radiogroup" aria-label="본체 색상" id="swatches"></div>
+  <button id="strap" aria-pressed="true">스트랩</button>
+  <button id="sound" aria-pressed="true">소리</button>
+  <button id="reset">시점 초기화</button>
+  <a href="./" class="link">개발자 패널 ↗</a>
+</aside>
+
+<footer class="hint">
+  버튼을 클릭하거나 <kbd>←</kbd> 이전 · <kbd>Space</kbd> 확인 · <kbd>→</kbd> 다음 · 드래그로 회전, 휠로 확대
+</footer>
+
+<script type="module" src="3d.js"></script>
+</body>
+</html>

@@ -5,11 +5,18 @@
 #include "../../firmware/RoutineDevice/src/platform/esp32/ProvisioningBuild.h"
 #include "../../firmware/RoutineDevice/src/Version.h"
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <random>
 
 namespace routine::sim {
+namespace {
+// The integration server over HTTPS. Browsers (the WebAssembly build on
+// GitHub Pages) can only reach it this way; the firmware's plain-HTTP
+// kDevelopmentServerUrl is the same backend, so saved settings move over.
+constexpr char kSimServerUrl[]="https://52-79-82-17.sslip.io";
+}
 void SimNetwork::begin(uint32_t){
   Settings loaded{};std::string value;
   if(readSetting(file_,"endpoint",value))loaded.endpoint=value;
@@ -23,7 +30,7 @@ void SimNetwork::begin(uint32_t){
   // Like the development firmware, the virtual device is bound to the
   // integration server. The device UID replaces the ESP32 eFuse MAC.
   bool changed=false;
-  if(loaded.endpoint.empty()){loaded.endpoint=platform::kDevelopmentServerUrl;changed=true;}
+  if(loaded.endpoint.empty()||loaded.endpoint==platform::kDevelopmentServerUrl){loaded.endpoint=kSimServerUrl;changed=true;}
   if(loaded.deviceUid.empty()){
     std::random_device random;const uint64_t mac=((uint64_t(random())<<32)|random())&0xffffffffffffull;
     char uid[32];std::snprintf(uid,sizeof(uid),"YESO-%012llX",static_cast<unsigned long long>(mac));
@@ -47,20 +54,32 @@ const char* SimNetwork::statusName() const {
   return names[unsigned(status_)];
 }
 void SimNetwork::printStatus() const {
-  console_.printf("API state=%s configured=%d paired=%d busy=%d http=%d failures=%lu\n",statusName(),!settings_.endpoint.empty(),settings_.uuid[0]!=0,working_.load(),httpStatus_.load(),static_cast<unsigned long>(failures_));
+  console_.printf("API state=%s configured=%d paired=%d busy=%d http=%d failures=%lu\n",statusName(),!settings_.endpoint.empty(),settings_.uuid[0]!=0,working_,httpStatus_,static_cast<unsigned long>(failures_));
 }
 bool SimNetwork::command(const char* line,uint32_t){
   if(std::strncmp(line,"api ",4))return false;
   if(!std::strcmp(line,"api status")){printStatus();console_.printf("API endpoint=%s uid=%s uuid=%s\n",settings_.endpoint.c_str(),settings_.deviceUid.c_str(),settings_.uuid[0]?settings_.uuid:"-");return true;}
   if(!std::strcmp(line,"api reset-uuid")){
-    if(working_.load()||identityPending_){console_.println("API ERR busy");return true;}
+    if(working_||identityPending_){console_.println("API ERR busy");return true;}
     Settings next=settings_;next.uuid[0]=0;next.deviceId=0;next.claimUncertain=false;
     if(saveSettings(next)){std::memset(pairingCode_,0,sizeof(pairingCode_));halted_=false;pending_=false;nextAt_=0;failures_=0;status_=settings_.endpoint.empty()?Status::Unconfigured:Status::Unpaired;console_.println("API UUID RESET");}
     else console_.println("API ERR storage");
     return true;
   }
-  if(working_.load()||identityPending_){console_.println("API ERR busy");return true;}
+  if(working_||identityPending_){console_.println("API ERR busy");return true;}
   if(!std::strcmp(line,"api sync")){pending_=true;halted_=false;nextAt_=0;console_.println("API sync requested");return true;}
+  if(!std::strncmp(line,"api bind ",9)){
+    // Simulator-only: take over a device that is already registered, using the
+    // values a real unit keeps in NVS (access UUID) and derives from its eFuse
+    // MAC (device UID). The pairing code was single-use, so claim cannot do it.
+    char uuid[64]{},uid[100]{},extra[2]{};unsigned long long id=0;
+    const int fields=std::sscanf(line+9,"%63s %99s %llu %1s",uuid,uid,&id,extra);
+    if(fields<2||fields>3||!api::validUuid(uuid)||std::strncmp(uid,"YESO-",5)){console_.println("API ERR bind: api bind <device_access_uuid> <YESO-…> [device id]");return true;}
+    Settings next=settings_;std::strcpy(next.uuid,uuid);next.deviceUid=uid;next.deviceId=fields==3?id:0;next.claimUncertain=false;
+    if(!saveSettings(next)){console_.println("API ERR storage");return true;}
+    std::memset(pairingCode_,0,sizeof(pairingCode_));halted_=false;pending_=true;nextAt_=0;failures_=0;status_=Status::Ready;
+    console_.printf("API BOUND uid=%s id=%llu\n",settings_.deviceUid.c_str(),static_cast<unsigned long long>(settings_.deviceId));return true;
+  }
   if(!std::strncmp(line,"api pair ",9)){
     if(!api::validPairingCode(line+9)||settings_.uuid[0]||settings_.claimUncertain||settings_.endpoint.empty())console_.println("API ERR pairing state");
     else{std::strcpy(pairingCode_,line+9);pending_=true;nextAt_=0;halted_=false;console_.println("API pairing requested");}
@@ -82,23 +101,18 @@ bool SimNetwork::start(bool claim,const application::ProductState& state,int64_t
     Settings next=settings_;next.claimUncertain=true;
     if(!saveSettings(next)){status_=Status::StorageError;halted_=true;return false;}
   }else if(!api::prepareSync(state,now,battery,request_)||!api::makeSync(request_,kFirmwareVersion,requestBody_))return false;
-  done_=false;working_=true;status_=Status::Working;pending_=false;generation_=state.generation;lastAttempt_=millis;
+  working_=true;status_=Status::Working;pending_=false;generation_=state.generation;lastAttempt_=millis;
   url_=settings_.endpoint+(claim?"/device-api/v1/claim":"/device-api/v1/sync");
   headers_=claim?std::string():std::string("X-Device-Uuid: ")+settings_.uuid+"\r\n";
   console_.printf("API POST %s\n",url_.c_str());
-  if(thread_.joinable())thread_.join();
-  thread_=std::thread([this]{runRequest();done_.store(true,std::memory_order_release);});
+  http_.start(url_,headers_,requestBody_,api::kMaxJsonBytes);
+  std::fill(requestBody_.begin(),requestBody_.end(),'\0');requestBody_.clear();
   if(claim)std::memset(pairingCode_,0,sizeof(pairingCode_));
   return true;
 }
-void SimNetwork::runRequest(){
-  httpStatus_=httpPost(url_,headers_,requestBody_,responseBody_,api::kMaxJsonBytes);
-  std::fill(requestBody_.begin(),requestBody_.end(),'\0');requestBody_.clear();
-}
 void SimNetwork::finish(application::ProductController& product,int64_t now,uint32_t millis){
-  if(thread_.joinable())thread_.join();
-  working_=false;done_=false;
-  console_.printf("API HTTP %d (%u bytes)\n",httpStatus_.load(),unsigned(responseBody_.size()));
+  working_=false;httpStatus_=http_.status();responseBody_=http_.take();
+  console_.printf("API HTTP %d (%u bytes)\n",httpStatus_,unsigned(responseBody_.size()));
   if(claimJob_){
     if(httpStatus_==200&&api::parseClaim(responseBody_.data(),responseBody_.size(),claim_)==api::Result::Ok){identityPending_=true;nextAt_=0;}
     else {
@@ -128,7 +142,7 @@ void SimNetwork::finish(application::ProductController& product,int64_t now,uint
   std::fill(responseBody_.begin(),responseBody_.end(),'\0');responseBody_.clear();printStatus();
 }
 void SimNetwork::tick(application::ProductController& product,const Clock& clock,int battery,bool allowed,uint32_t now){
-  if(done_.load(std::memory_order_acquire))finish(product,clock.unixSeconds,now);
+  if(working_&&http_.done())finish(product,clock.unixSeconds,now);
   if(identityPending_){
     if(nextAt_&&int32_t(now-nextAt_)<0)return;
     Settings next=settings_;next.deviceId=claim_.deviceId;std::strcpy(next.uuid,claim_.uuid.data());next.claimUncertain=false;
@@ -136,7 +150,7 @@ void SimNetwork::tick(application::ProductController& product,const Clock& clock
     else status_=Status::StorageError;
     nextAt_=now+5000;return;
   }
-  if(!allowed||working_.load()||halted_||product.faulted())return;
+  if(!allowed||working_||halted_||product.faulted())return;
   if(!storeReady_){status_=Status::StorageError;return;}
   if(settings_.endpoint.empty()){status_=Status::Unconfigured;return;}
   if(settings_.claimUncertain){status_=Status::ClaimUncertain;return;}

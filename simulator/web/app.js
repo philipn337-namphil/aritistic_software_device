@@ -1,6 +1,6 @@
-// Thin view over the virtual device host: it shows frames and forwards raw
-// button levels. All product behaviour runs in the firmware code on the host.
-'use strict';
+// Thin view over the virtual device (PC host or in-page WebAssembly, see
+// device-link.js). All product behaviour runs in the firmware code.
+import { createDeviceLink, decodeFrame } from './device-link.js';
 
 const $ = (selector) => document.querySelector(selector);
 const screen = $('#screen');
@@ -8,75 +8,28 @@ const context = screen.getContext('2d');
 const image = context.createImageData(240, 320);
 const consoleView = $('#console');
 
-let frame = -1;
-let buttons = 0;
 let status = null;
 let soundOn = true;
 let audio = null;
-let lastBeeps = null;
-let consoleTotal = 0;
-let connected = true;
+let mode = '';
 
-// ---- frames ---------------------------------------------------------------
-function draw(buffer) {
-  const pixels = new Uint16Array(buffer);
-  const out = image.data;
-  for (let i = 0, o = 0; i < pixels.length; ++i, o += 4) {
-    const c = pixels[i];
-    out[o] = ((c >> 11) * 527 + 23) >> 6;
-    out[o + 1] = (((c >> 5) & 63) * 259 + 33) >> 6;
-    out[o + 2] = ((c & 31) * 527 + 23) >> 6;
-    out[o + 3] = 255;
-  }
-  context.putImageData(image, 0, 0);
-}
-
-async function pollFrame() {
-  try {
-    const response = await fetch(`/api/frame?since=${frame}`, { cache: 'no-store' });
-    setConnected(true);
-    $('#screenOff').hidden = response.headers.get('X-Screen-On') !== '0';
-    if (response.status === 200) {
-      draw(await response.arrayBuffer());
-      frame = Number(response.headers.get('X-Frame'));
-    }
-  } catch {
-    setConnected(false);
-  }
-  setTimeout(pollFrame, 33);
-}
-
-function setConnected(value) {
-  if (connected === value) return;
-  connected = value;
-  $('#offline').hidden = value;
-}
+const link = createDeviceLink({
+  onFrame(pixels) { decodeFrame(pixels, image); context.putImageData(image, 0, 0); },
+  onScreen(on) { $('#screenOff').hidden = on; },
+  onConnection(ok) { $('#offline').hidden = ok; },
+  onStatus(s) { status = s; renderStatus(s); },
+  onBeep: () => beep(),
+  onConsole(text, reset) { if (reset) consoleView.textContent = ''; appendConsole(text); },
+  onMode(value) { mode = value; },
+});
 
 // ---- buttons --------------------------------------------------------------
-// Requests are sent in order. A press is held at least 70 ms so a quick click
-// still passes the firmware's 30 ms debounce, exactly like a real tap.
-let sendChain = Promise.resolve();
-function sendButtons() {
-  const mask = buttons;
-  sendChain = sendChain.then(() => fetch('/api/buttons', { method: 'POST', body: String(mask) }).catch(() => {}));
-}
-const pressedAt = [0, 0, 0];
 function press(bit) {
-  if (buttons & (1 << bit)) return;
   unlockAudio();
-  pressedAt[bit] = performance.now();
-  buttons |= 1 << bit;
-  document.querySelector(`.hw[data-bit="${bit}"]`).classList.add('down');
-  sendButtons();
+  if (link.press(bit)) document.querySelector(`.hw[data-bit="${bit}"]`).classList.add('down');
 }
 function release(bit) {
-  if (!(buttons & (1 << bit))) return;
-  const wait = Math.max(0, 70 - (performance.now() - pressedAt[bit]));
-  setTimeout(() => {
-    buttons &= ~(1 << bit);
-    document.querySelector(`.hw[data-bit="${bit}"]`).classList.remove('down');
-    sendButtons();
-  }, wait);
+  link.release(bit, () => document.querySelector(`.hw[data-bit="${bit}"]`).classList.remove('down'));
 }
 for (const key of document.querySelectorAll('.hw')) {
   const bit = Number(key.dataset.bit);
@@ -137,7 +90,7 @@ function renderStatus(s) {
   const [apiLabel, apiTone] = apiNames[s.api] || [s.api, 'warn'];
   const rows = [
     ['서버', `<span class="pill ${apiTone}">${apiLabel}</span>${s.http ? ` <span class="muted">HTTP ${s.http}</span>` : ''}`],
-    ['모드', s.demo ? '데모 (가상 시간)' : '실제 (PC 시계)'],
+    ['모드', s.demo ? '데모 (가상 시간)' : '실제 시계'],
     ['기기 시각', formatTime(s.unixSeconds) + (s.clockOffset ? ` (오프셋 ${s.clockOffset}s)` : '')],
     ['화면', `${screens[s.screen] ?? s.screen} · 선택 ${s.selected}${s.screenOn ? '' : ' · 절전'}`],
     ['루틴', `${s.routines}개 · 이벤트 ${s.events}개 · 세대 ${s.generation}`],
@@ -147,7 +100,7 @@ function renderStatus(s) {
   if (s.fault) rows.push(['오류', '<span class="pill bad">저장 상태 오류</span>']);
   if (!s.assets) rows.push(['자료', '<span class="pill bad">ui.pak 없음</span>']);
   $('#stats').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
-  $('#version').textContent = `펌웨어 ${s.version} · 동일 C++ 코드 실행 중`;
+  $('#version').textContent = `펌웨어 ${s.version} · ${mode === 'wasm' ? '브라우저(WebAssembly)에서' : 'PC 시뮬레이터에서'} 동일 C++ 코드 실행 중`;
   $('#endpoint').textContent = `엔드포인트 ${s.endpoint}`;
   setToggle('wifi', s.wifi);
   setToggle('motion', s.motion);
@@ -159,17 +112,6 @@ function setToggle(name, on) {
   button.classList.toggle('active', on);
   button.setAttribute('aria-pressed', String(on));
 }
-async function pollStatus() {
-  try {
-    const s = await (await fetch('/api/status', { cache: 'no-store' })).json();
-    if (lastBeeps !== null && s.beeps > lastBeeps) beep();
-    lastBeeps = s.beeps;
-    status = s;
-    renderStatus(s);
-  } catch { /* shown by the frame poller */ }
-  setTimeout(pollStatus, 250);
-}
-
 // ---- console --------------------------------------------------------------
 function appendConsole(text) {
   if (!text) return;
@@ -177,23 +119,8 @@ function appendConsole(text) {
   consoleView.textContent = (consoleView.textContent + text).slice(-40000);
   if (atBottom) consoleView.scrollTop = consoleView.scrollHeight;
 }
-async function pollConsole() {
-  try {
-    const response = await fetch(`/api/console?since=${consoleTotal}`, { cache: 'no-store' });
-    const total = Number(response.headers.get('X-Console-Total'));
-    const text = await response.text();
-    if (total < consoleTotal) consoleView.textContent = '';  // host restarted
-    consoleTotal = total;
-    appendConsole(text);
-  } catch { /* offline */ }
-  setTimeout(pollConsole, 400);
-}
 async function run(line) {
-  try {
-    await fetch('/api/command', { method: 'POST', body: line });
-  } catch {
-    appendConsole(`! 전송 실패: ${line}\n`);
-  }
+  await link.run(line);
 }
 
 document.addEventListener('click', (event) => {
@@ -217,13 +144,23 @@ $('#pairForm').addEventListener('submit', (event) => {
   run(`api pair ${code}`);
   $('#pairCode').value = '';
 });
+$('#bindForm').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const uid = $('#bindUid').value.trim().toUpperCase();
+  const key = $('#bindKey').value.trim().toLowerCase();
+  const id = $('#bindId').value.trim();
+  if (!/^YESO-[0-9A-F]{12}$/.test(uid)) { appendConsole('! 기기 고유번호는 YESO-로 시작하는 12자리 값입니다
+'); return; }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(key)) { appendConsole('! 기기 접속 키 형식이 아닙니다
+'); return; }
+  if (id && !/^[0-9]+$/.test(id)) { appendConsole('! 기기 id는 숫자입니다
+'); return; }
+  run(`api bind ${key} ${uid}${id ? ` ${id}` : ''}`);
+  $('#bindKey').value = '';
+});
 $('#cmdForm').addEventListener('submit', (event) => {
   event.preventDefault();
   const line = $('#cmd').value.trim();
   if (line) run(line);
   $('#cmd').value = '';
 });
-
-pollFrame();
-pollStatus();
-pollConsole();

@@ -1,9 +1,75 @@
 #include "HttpClient.h"
+#include <atomic>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten/fetch.h>
+#include <cstring>
+#include <vector>
+#else
 #include <windows.h>
 #include <winhttp.h>
+#include <thread>
 #include <vector>
+#endif
 
 namespace routine::sim {
+struct HttpRequest::State {
+  std::atomic<bool> done{true};
+  int status=0;
+  std::string body;
+  size_t maxBytes=0;
+#ifdef __EMSCRIPTEN__
+  std::string requestBody;
+  std::vector<std::string> headerText;
+  std::vector<const char*> headers;
+#else
+  std::thread worker;
+#endif
+};
+
+#ifdef __EMSCRIPTEN__
+namespace {
+// The fetch callbacks own a reference to the request state until they run.
+void complete(emscripten_fetch_t* fetch){
+  auto* holder=static_cast<std::shared_ptr<HttpRequest::State>*>(fetch->userData);
+  auto& state=**holder;
+  if(!fetch->status)state.status=-1;   // network error, CORS or mixed-content block
+  else if(size_t(fetch->numBytes)>state.maxBytes)state.status=-2;
+  else {state.status=fetch->status;state.body.assign(fetch->data,size_t(fetch->numBytes));}
+  state.done=true;
+  emscripten_fetch_close(fetch);
+  delete holder;
+}
+}
+HttpRequest::HttpRequest():state_(std::make_shared<State>()){}
+HttpRequest::~HttpRequest()=default;
+void HttpRequest::start(const std::string& url,const std::string& extraHeaders,const std::string& body,size_t maxBytes){
+  state_=std::make_shared<State>();
+  auto& s=*state_;
+  s.done=false;s.maxBytes=maxBytes;s.requestBody=body;
+  // "Name: value\r\n" lines → the name/value list emscripten_fetch expects.
+  s.headerText={"Content-Type","application/json"};
+  for(size_t at=0;at<extraHeaders.size();){
+    const size_t end=extraHeaders.find("\r\n",at),colon=extraHeaders.find(':',at);
+    if(end==std::string::npos||colon==std::string::npos||colon>end)break;
+    s.headerText.push_back(extraHeaders.substr(at,colon-at));
+    size_t value=colon+1;while(value<end&&extraHeaders[value]==' ')++value;
+    s.headerText.push_back(extraHeaders.substr(value,end-value));
+    at=end+2;
+  }
+  for(const auto& h:s.headerText)s.headers.push_back(h.c_str());
+  s.headers.push_back(nullptr);
+  emscripten_fetch_attr_t attr;emscripten_fetch_attr_init(&attr);
+  std::strcpy(attr.requestMethod,"POST");
+  attr.attributes=EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+  attr.requestHeaders=s.headers.data();
+  attr.requestData=s.requestBody.data();attr.requestDataSize=s.requestBody.size();
+  attr.timeoutMSecs=8000;
+  attr.userData=new std::shared_ptr<State>(state_);
+  attr.onsuccess=complete;attr.onerror=complete;
+  emscripten_fetch(&attr,url.c_str());
+}
+#else
 namespace {
 std::wstring widen(const std::string& text){
   if(text.empty())return {};
@@ -14,7 +80,6 @@ struct Handle {
   HINTERNET h=nullptr;
   ~Handle(){if(h)WinHttpCloseHandle(h);}
 };
-}
 int httpPost(const std::string& url,const std::string& extraHeaders,const std::string& body,
              std::string& response,size_t maxBytes){
   response.clear();
@@ -48,5 +113,27 @@ int httpPost(const std::string& url,const std::string& extraHeaders,const std::s
     response.append(chunk.data(),read);
   }
   return int(status);
+}
+}
+HttpRequest::HttpRequest():state_(std::make_shared<State>()){}
+HttpRequest::~HttpRequest(){if(state_->worker.joinable())state_->worker.join();}
+void HttpRequest::start(const std::string& url,const std::string& extraHeaders,const std::string& body,size_t maxBytes){
+  if(state_->worker.joinable())state_->worker.join();
+  state_->done=false;state_->body.clear();state_->maxBytes=maxBytes;
+  auto state=state_;
+  state_->worker=std::thread([state,url,extraHeaders,body]{
+    state->status=httpPost(url,extraHeaders,body,state->body,state->maxBytes);
+    state->done.store(true,std::memory_order_release);
+  });
+}
+#endif
+
+bool HttpRequest::done() const { return state_->done.load(std::memory_order_acquire); }
+int HttpRequest::status() const { return state_->status; }
+std::string HttpRequest::take() {
+#ifndef __EMSCRIPTEN__
+  if(state_->worker.joinable())state_->worker.join();
+#endif
+  return std::move(state_->body);
 }
 }

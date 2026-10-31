@@ -13,12 +13,25 @@ struct GrowthPolicy {
 };
 inline constexpr GrowthPolicy kFigmaGrowth{};
 enum class GrowthNotice : uint8_t { None, Evolved, Completed };
+// Demo default per Figma "디바이스 화면 전체 정리(최종최종)": sky-blue polar bear (8),
+// drawn at its third (standing, waving) stage. Only fresh state uses this;
+// saved progress keeps its own selection and growth.
+constexpr uint8_t kDefaultCharacter = 8;
+constexpr uint8_t kDefaultStage = 3;
+template <typename T>
+constexpr std::array<T,kMaxCharacters> defaultEntry(T value) {
+  std::array<T,kMaxCharacters> entries{};
+  entries[kDefaultCharacter] = value;
+  return entries;
+}
 struct Companion {
-  uint64_t owned = 1; // Initial pink character, already shown in the home design.
-  std::array<uint16_t,kMaxCharacters> experience{};
+  uint64_t owned = uint64_t(1) << kDefaultCharacter;
+  // Start of stage 3: the first two stage targets are already filled.
+  std::array<uint16_t,kMaxCharacters> experience =
+      defaultEntry<uint16_t>(uint16_t(kFigmaGrowth.stageTargets[0] + kFigmaGrowth.stageTargets[1]));
   // Highest collected stage survives restarting a completed companion.
-  std::array<uint8_t,kMaxCharacters> highestStage{};
-  uint8_t selected = 0;
+  std::array<uint8_t,kMaxCharacters> highestStage = defaultEntry<uint8_t>(kDefaultStage);
+  uint8_t selected = kDefaultCharacter;
   uint8_t offered = kNoCharacter;
   GrowthNotice notice = GrowthNotice::None;
 };
