@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { createDeviceLink, decodeFrame } from './device-link.js?v=bindlink';
+import { createDeviceLink, decodeFrame } from './device-link.js?v=showcase';
 
 const $ = (selector) => document.querySelector(selector);
 
