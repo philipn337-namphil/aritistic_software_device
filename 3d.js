@@ -10,7 +10,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { createDeviceLink, decodeFrame } from './device-link.js?v=showcase';
+import { createDeviceLink, decodeFrame } from './device-link.js?v=motion';
 
 const $ = (selector) => document.querySelector(selector);
 
