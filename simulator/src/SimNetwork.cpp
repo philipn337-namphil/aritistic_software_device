@@ -5,6 +5,7 @@
 #include "../../firmware/RoutineDevice/src/platform/esp32/ProvisioningBuild.h"
 #include "../../firmware/RoutineDevice/src/Version.h"
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <random>
@@ -67,6 +68,18 @@ bool SimNetwork::command(const char* line,uint32_t){
   }
   if(working_||identityPending_){console_.println("API ERR busy");return true;}
   if(!std::strcmp(line,"api sync")){pending_=true;halted_=false;nextAt_=0;console_.println("API sync requested");return true;}
+  if(!std::strncmp(line,"api bind ",9)){
+    // Simulator-only: take over a device that is already registered, using the
+    // values a real unit keeps in NVS (access UUID) and derives from its eFuse
+    // MAC (device UID). The pairing code was single-use, so claim cannot do it.
+    char uuid[64]{},uid[100]{},extra[2]{};unsigned long long id=0;
+    const int fields=std::sscanf(line+9,"%63s %99s %llu %1s",uuid,uid,&id,extra);
+    if(fields<2||fields>3||!api::validUuid(uuid)||std::strncmp(uid,"YESO-",5)){console_.println("API ERR bind: api bind <device_access_uuid> <YESO-…> [device id]");return true;}
+    Settings next=settings_;std::strcpy(next.uuid,uuid);next.deviceUid=uid;next.deviceId=fields==3?id:0;next.claimUncertain=false;
+    if(!saveSettings(next)){console_.println("API ERR storage");return true;}
+    std::memset(pairingCode_,0,sizeof(pairingCode_));halted_=false;pending_=true;nextAt_=0;failures_=0;status_=Status::Ready;
+    console_.printf("API BOUND uid=%s id=%llu\n",settings_.deviceUid.c_str(),static_cast<unsigned long long>(settings_.deviceId));return true;
+  }
   if(!std::strncmp(line,"api pair ",9)){
     if(!api::validPairingCode(line+9)||settings_.uuid[0]||settings_.claimUncertain||settings_.endpoint.empty())console_.println("API ERR pairing state");
     else{std::strcpy(pairingCode_,line+9);pending_=true;nextAt_=0;halted_=false;console_.println("API pairing requested");}

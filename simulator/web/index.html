@@ -47,6 +47,18 @@
         <input id="pairCode" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" placeholder="페어링 코드 10자리" autocomplete="off">
         <button type="submit">페어링</button>
       </form>
+      <details class="bind">
+        <summary>이미 등록된 기기로 연결</summary>
+        <p class="muted small">서버의 기기 정보를 입력하면 이 브라우저가 그 기기로 동작합니다. 값은 이 브라우저에만 저장됩니다.</p>
+        <form id="bindForm" class="stack">
+          <input id="bindUid" placeholder="기기 고유번호 (YESO-…)" autocomplete="off" spellcheck="false">
+          <input id="bindKey" placeholder="기기 접속 키 (device_access_uuid)" autocomplete="off" spellcheck="false">
+          <div class="row">
+            <input id="bindId" inputmode="numeric" placeholder="기기 id (선택)" autocomplete="off">
+            <button type="submit">연결</button>
+          </div>
+        </form>
+      </details>
       <div class="row wrap">
         <button data-cmd="api sync">지금 동기화</button>
         <button data-cmd="api status">API 상태</button>
