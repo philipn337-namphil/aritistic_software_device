@@ -1,6 +1,6 @@
 // Thin view over the virtual device (PC host or in-page WebAssembly, see
 // device-link.js). All product behaviour runs in the firmware code.
-import { createDeviceLink, decodeFrame } from './device-link.js?v=motion';
+import { createDeviceLink, decodeFrame } from './device-link.js?v=tear';
 
 const $ = (selector) => document.querySelector(selector);
 const screen = $('#screen');
