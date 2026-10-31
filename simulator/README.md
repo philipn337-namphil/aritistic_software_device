@@ -41,6 +41,19 @@ PowerShell에서 저장소 루트 기준:
 **필요한 것:** MSYS2 g++ (`C:\msys64\ucrt64\bin`, 이미 설치됨), Git Bash, Python(모의 서버용), 그리고 `simulator/assets/ui.pak`.
 `ui.pak`(7 MB, CRC `dad8398c`)은 이 저장소에 없어서 `Downloads\Yeso2026-master\…\assets\packed\ui.pak` 에서 복사해 두었습니다. 다른 PC에서 실행하려면 이 파일도 같이 옮겨야 합니다.
 
+### 3D 기기 화면
+
+`http://localhost:8080/3d.html` (개발자 패널 상단 링크로도 이동)
+
+- 기기 형상은 제품 CAD 내보내기 파일 **`web/models/device.glb`(시연용.glb, 9.4 MB)를 그대로 불러옵니다**. 앞·뒤 케이스, 버튼 3개, 디스플레이 모듈만 표시하고, 내부 부품(보드·스위치·부저 등 노드 4~76)은 숨깁니다.
+  - 실측 59.9 × 80.4 × 33.4 mm. 노드 번호는 `3d.js`의 `PART`에 있습니다 (앞 케이스 0, 뒤 케이스 78, 버튼 2·3·1, 디스플레이 77).
+  - 색상은 재질만 바꿉니다 (렌더의 7가지: 화이트·퍼플·블랙·핑크·그린·블루·옐로).
+  - 왼쪽 옆면 아래쪽의 제품코드 스티커는 뒤 케이스 곡면에 광선을 쏴서 표면을 따라 붙입니다. 모든 색상 공통입니다.
+  - 모델 파일을 바꾸면 노드 번호가 달라질 수 있으니 `PART`를 함께 확인해야 합니다.
+- LCD에는 펌웨어 프레임버퍼가 그대로 텍스처로 들어가고, 3D 버튼을 클릭하면 실제 입력 경로(디바운스, 화면 컨텍스트)를 그대로 탑니다.
+- 드래그로 회전, 휠로 확대, 색상 7종, 스트랩 표시, 부저 소리와 진동 효과, 절전 시 화면 꺼짐, 휴대폰 세로 화면을 지원합니다.
+- Three.js는 CDN(jsdelivr, `three@0.160.0`)에서 불러오므로 **인터넷 연결이 필요**합니다.
+
 ### 조작
 
 | 동작 | 마우스 | 키보드 |
@@ -114,16 +127,8 @@ PowerShell에서 저장소 루트 기준:
 
 ## 4. 발견한 것 / 확인이 필요한 것
 
-### 🔴 하드웨어가 동작하지 않는 원인일 수 있음: 핀 설정과 HANDOFF 배선이 다름
-커밋되지 않은 작업본 `HardwareConfig.h` 와 `HANDOFF.md` 의 "Codex 최종 기준 배선(10-28)"이 서로 다릅니다.
-
-| 신호 | HANDOFF.md (배선 기준) | 작업본 HardwareConfig.h |
-|---|---|---|
-| LCD SCLK | **D8** (GPIO7) | **D9** (GPIO8) |
-| 부저 | **D11** (GPIO38) | **D8** (GPIO7) |
-| 버튼 | **1개, D3** | **3개, D4/D5/D6** (D6 = GPIO43 = UART0 TX) |
-
-실제 납땜이 HANDOFF대로라면 펌웨어는 SCLK를 D9로 보내서 **화면이 켜지지 않고**, 부저 출력(D8)이 실제 SCLK 선을 흔들게 됩니다. 실물 배선을 확인한 뒤 둘 중 하나로 맞춰야 합니다. 시뮬레이터는 작업본 기준(버튼 3개)으로 만들었습니다.
+### ✅ 핀 기준: 펌웨어 `HardwareConfig.h` 로 확정 (2026-10-31)
+LCD SCLK **D9**, 부저 **D8**, 버튼 **D4/D5/D6**(이전/확인/다음, D6 = GPIO43 = UART0 TX). `docs/wiring/` 배선도도 이 기준으로 고쳤습니다. 시뮬레이터도 같은 기준입니다.
 
 ### 🟡 UX 규칙 확인 필요
 - **자동 절전 시간**: HANDOFF 시나리오는 "10초 무입력 → 화면 끔"인데 코드는 `idleMs_=60000`(60초)입니다.
@@ -162,7 +167,8 @@ simulator/
 ├── src/FileSlots.*         FlashSlots 이식 (A/B 스냅샷, 세대 마커, 설정 파일)
 ├── src/Console.h           USB Serial 대체 (웹 콘솔로 전달)
 ├── src/main.cpp            HTTP 서버 + 메인 루프 (단일 스레드)
-├── web/                    index.html · style.css · app.js
+├── web/                    index.html · style.css · app.js (2D + 개발자 패널)
+│                           3d.html · 3d.css · 3d.js · device-link.js (3D 기기), models/device.glb (CAD 모델)
 ├── assets/ui.pak           화면 에셋 팩 (원본 프로젝트에서 복사, git 커밋 여부 결정 필요)
 ├── build/                  빌드 결과 (git 제외)
 └── data/                   기기 저장소 (git 제외)
