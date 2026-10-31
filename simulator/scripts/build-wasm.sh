@@ -17,7 +17,7 @@ if ! command -v em++ >/dev/null 2>&1; then
 fi
 EMXX=em++
 mkdir -p "$OUT" "$WEB/wasm" "$WEB/assets"
-FLAGS="-std=c++17 -O2 -DROUTINE_BLE_DEVELOPMENT=1"
+FLAGS="-std=c++17 -O2 -DROUTINE_BLE_DEVELOPMENT=1 -DROUTINE_SHOWCASE=1"
 SOURCES=()
 for area in application content domain presentation generated; do
   for f in "$FW/$area"/*.cpp; do SOURCES+=("$f"); done

@@ -9,7 +9,7 @@ SIM="$ROOT/simulator"
 OUT="$SIM/build/obj"
 mkdir -p "$OUT"
 CXX=${CXX:-g++}
-FLAGS="-std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -DROUTINE_BLE_DEVELOPMENT=1"
+FLAGS="-std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -DROUTINE_BLE_DEVELOPMENT=1 -DROUTINE_SHOWCASE=1"
 SOURCES=()
 for area in application content domain presentation generated; do
   for f in "$FW/$area"/*.cpp; do SOURCES+=("$f"); done

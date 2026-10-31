@@ -68,7 +68,7 @@ void ProductController::handleCatalogInput(Intent intent) {
     ++viewRevision_;
   } else if (view_.item == count) show(Screen::Home);
   else if (characters && domain::collected(state_.companion,entry.character,entry.stage)) show(Screen::CharacterConfirm);
-  else if (!characters && foodInventory(state_, uint8_t(view_.item + 1)).acquired) show(Screen::FoodDetail);
+  else if (!characters && (content::kShowcase || foodInventory(state_, uint8_t(view_.item + 1)).acquired)) show(Screen::FoodDetail);
 }
 
 void ProductController::handleCharacterInput(Intent intent) {
@@ -97,8 +97,9 @@ void ProductController::handleCharacterInput(Intent intent) {
   candidate_ = state_;
   candidate_.companion.selected = entry.character;
   candidate_.companion.highestStage[entry.character] = domain::collectedStage(state_.companion,entry.character);
-  auto& experience = candidate_.companion.experience[entry.character];
-  if (experience == domain::kFigmaGrowth.total()) experience = 0;
+  // "다시 키우기" restarts the chosen species at the chosen stage.
+  candidate_.companion.experience[entry.character] = domain::stageStart(entry.stage);
+  candidate_.companion.notice = domain::GrowthNotice::None;
   if (commit()) reconcile();
 }
 
