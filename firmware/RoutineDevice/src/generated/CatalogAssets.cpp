@@ -1,36 +1,35 @@
-#line 1 "C:\\Users\\phili\\Downloads\\Yeso2026-master\\Yeso2026-master\\firmware\\RoutineDevice\\src\\generated\\CatalogAssets.cpp"
 #include "CatalogAssets.h"
 namespace assets {
-const CompressedImage characterArt0 = {nullptr, 13212, 68, 157, 116, 96, 267481};
-const CompressedImage characterArt1 = {nullptr, 25009, 47, 114, 152, 159, 280693};
-const CompressedImage characterArt2 = {nullptr, 29073, 61, 103, 128, 168, 305702};
-const CompressedImage characterArt3 = {nullptr, 8765, 71, 141, 92, 83, 334775};
-const CompressedImage characterArt4 = {nullptr, 21787, 57, 113, 120, 145, 343540};
-const CompressedImage characterArt5 = {nullptr, 28470, 54, 102, 129, 165, 365327};
-const CompressedImage characterArt6 = {nullptr, 9859, 67, 152, 100, 100, 393797};
-const CompressedImage characterArt7 = {nullptr, 17471, 54, 112, 130, 146, 403656};
-const CompressedImage characterArt8 = {nullptr, 18310, 58, 94, 127, 165, 421127};
-const CompressedImage characterArt9 = {nullptr, 10507, 64, 153, 103, 92, 439437};
-const CompressedImage characterArt10 = {nullptr, 18749, 62, 125, 114, 130, 449944};
-const CompressedImage characterArt11 = {nullptr, 22834, 60, 98, 119, 159, 468693};
-const CompressedImage characterArt12 = {nullptr, 13304, 75, 133, 91, 120, 491527};
-const CompressedImage characterArt13 = {nullptr, 19754, 61, 119, 131, 139, 504831};
-const CompressedImage characterArt14 = {nullptr, 23637, 65, 87, 121, 171, 524585};
-const CompressedImage characterArt15 = {nullptr, 13363, 51, 139, 142, 107, 548222};
-const CompressedImage characterArt16 = {nullptr, 19247, 54, 122, 141, 132, 561585};
-const CompressedImage characterArt17 = {nullptr, 16630, 60, 94, 121, 160, 580832};
-const CompressedImage characterArt18 = {nullptr, 8883, 58, 146, 125, 93, 597462};
-const CompressedImage characterArt19 = {nullptr, 14375, 69, 112, 104, 143, 606345};
-const CompressedImage characterArt20 = {nullptr, 15159, 60, 111, 124, 132, 620720};
-const CompressedImage characterArt21 = {nullptr, 14648, 71, 132, 88, 118, 635879};
-const CompressedImage characterArt22 = {nullptr, 19364, 54, 114, 127, 140, 650527};
-const CompressedImage characterArt23 = {nullptr, 20704, 68, 94, 104, 164, 669891};
-const CompressedImage characterArt24 = {nullptr, 11899, 69, 139, 105, 115, 690595};
-const CompressedImage characterArt25 = {nullptr, 16522, 63, 107, 118, 151, 702494};
-const CompressedImage characterArt26 = {nullptr, 15915, 67, 85, 106, 176, 719016};
-const CompressedImage characterArt27 = {nullptr, 9248, 85, 140, 75, 115, 734931};
-const CompressedImage characterArt28 = {nullptr, 15952, 60, 106, 113, 153, 744179};
-const CompressedImage characterArt29 = {nullptr, 19983, 47, 90, 142, 166, 760131};
+const CompressedImage characterArt0 = {nullptr, 9156, 74, 187, 92, 77, 267481};
+const CompressedImage characterArt1 = {nullptr, 15922, 59, 135, 123, 130, 276637};
+const CompressedImage characterArt2 = {nullptr, 29773, 53, 91, 133, 177, 292559};
+const CompressedImage characterArt3 = {nullptr, 7977, 76, 176, 91, 85, 322332};
+const CompressedImage characterArt4 = {nullptr, 17323, 67, 118, 108, 132, 330309};
+const CompressedImage characterArt5 = {nullptr, 29627, 54, 98, 132, 171, 347632};
+const CompressedImage characterArt6 = {nullptr, 9859, 67, 152, 100, 100, 377259};
+const CompressedImage characterArt7 = {nullptr, 17471, 54, 112, 130, 146, 387118};
+const CompressedImage characterArt8 = {nullptr, 18310, 58, 94, 127, 165, 404589};
+const CompressedImage characterArt9 = {nullptr, 10507, 64, 153, 103, 92, 422899};
+const CompressedImage characterArt10 = {nullptr, 18749, 62, 125, 114, 130, 433406};
+const CompressedImage characterArt11 = {nullptr, 22834, 60, 98, 119, 159, 452155};
+const CompressedImage characterArt12 = {nullptr, 13304, 75, 133, 91, 120, 474989};
+const CompressedImage characterArt13 = {nullptr, 19754, 61, 119, 131, 139, 488293};
+const CompressedImage characterArt14 = {nullptr, 23637, 65, 87, 121, 171, 508047};
+const CompressedImage characterArt15 = {nullptr, 13363, 51, 139, 142, 107, 531684};
+const CompressedImage characterArt16 = {nullptr, 19247, 54, 122, 141, 132, 545047};
+const CompressedImage characterArt17 = {nullptr, 16630, 60, 94, 121, 160, 564294};
+const CompressedImage characterArt18 = {nullptr, 8883, 58, 146, 125, 93, 580924};
+const CompressedImage characterArt19 = {nullptr, 14375, 69, 112, 104, 143, 589807};
+const CompressedImage characterArt20 = {nullptr, 15159, 60, 111, 124, 132, 604182};
+const CompressedImage characterArt21 = {nullptr, 14648, 71, 132, 88, 118, 619341};
+const CompressedImage characterArt22 = {nullptr, 19364, 54, 114, 127, 140, 633989};
+const CompressedImage characterArt23 = {nullptr, 20704, 68, 94, 104, 164, 653353};
+const CompressedImage characterArt24 = {nullptr, 11899, 69, 139, 105, 115, 674057};
+const CompressedImage characterArt25 = {nullptr, 16522, 63, 107, 118, 151, 685956};
+const CompressedImage characterArt26 = {nullptr, 15915, 67, 85, 106, 176, 702478};
+const CompressedImage characterArt27 = {nullptr, 9248, 85, 140, 75, 115, 718393};
+const CompressedImage characterArt28 = {nullptr, 15952, 60, 106, 113, 153, 727641};
+const CompressedImage characterArt29 = {nullptr, 19983, 47, 90, 142, 166, 743593};
 const CatalogArt characterArt[] = {
   {&characterArt0, 93 },
   {&characterArt1, 98 },
@@ -63,20 +62,20 @@ const CatalogArt characterArt[] = {
   {&characterArt28, 120 },
   {&characterArt29, 120 },
 };
-const CompressedImage lockedCharacterArt0 = {nullptr, 7242, 68, 157, 116, 96, 780114};
-const CompressedImage lockedCharacterArt1 = {nullptr, 13346, 47, 114, 152, 159, 787356};
-const CompressedImage lockedCharacterArt2 = {nullptr, 13367, 61, 103, 128, 168, 800702};
-const CompressedImage lockedCharacterArt3 = {nullptr, 4422, 71, 141, 92, 83, 814069};
-const CompressedImage lockedCharacterArt4 = {nullptr, 9532, 57, 113, 120, 145, 818491};
-const CompressedImage lockedCharacterArt5 = {nullptr, 12734, 54, 102, 129, 165, 828023};
-const CompressedImage lockedCharacterArt8 = {nullptr, 10601, 53, 85, 141, 184, 840757};
-const CompressedImage lockedCharacterArt11 = {nullptr, 11301, 54, 92, 130, 174, 851358};
-const CompressedImage lockedCharacterArt14 = {nullptr, 12824, 61, 83, 131, 185, 862659};
-const CompressedImage lockedCharacterArt17 = {nullptr, 8684, 54, 92, 132, 175, 875483};
-const CompressedImage lockedCharacterArt20 = {nullptr, 9076, 49, 108, 143, 154, 884167};
-const CompressedImage lockedCharacterArt23 = {nullptr, 9933, 70, 97, 108, 168, 893243};
-const CompressedImage lockedCharacterArt26 = {nullptr, 8392, 71, 92, 104, 176, 903176};
-const CompressedImage lockedCharacterArt29 = {nullptr, 9908, 43, 90, 150, 177, 911568};
+const CompressedImage lockedCharacterArt0 = {nullptr, 7242, 68, 157, 116, 96, 763576};
+const CompressedImage lockedCharacterArt1 = {nullptr, 13346, 47, 114, 152, 159, 770818};
+const CompressedImage lockedCharacterArt2 = {nullptr, 13367, 61, 103, 128, 168, 784164};
+const CompressedImage lockedCharacterArt3 = {nullptr, 4422, 71, 141, 92, 83, 797531};
+const CompressedImage lockedCharacterArt4 = {nullptr, 9532, 57, 113, 120, 145, 801953};
+const CompressedImage lockedCharacterArt5 = {nullptr, 12734, 54, 102, 129, 165, 811485};
+const CompressedImage lockedCharacterArt8 = {nullptr, 10601, 53, 85, 141, 184, 824219};
+const CompressedImage lockedCharacterArt11 = {nullptr, 11301, 54, 92, 130, 174, 834820};
+const CompressedImage lockedCharacterArt14 = {nullptr, 12824, 61, 83, 131, 185, 846121};
+const CompressedImage lockedCharacterArt17 = {nullptr, 8684, 54, 92, 132, 175, 858945};
+const CompressedImage lockedCharacterArt20 = {nullptr, 9076, 49, 108, 143, 154, 867629};
+const CompressedImage lockedCharacterArt23 = {nullptr, 9933, 70, 97, 108, 168, 876705};
+const CompressedImage lockedCharacterArt26 = {nullptr, 8392, 71, 92, 104, 176, 886638};
+const CompressedImage lockedCharacterArt29 = {nullptr, 9908, 43, 90, 150, 177, 895030};
 const CatalogArt lockedCharacterArt[] = {
   {&lockedCharacterArt0, 107 },
   {&lockedCharacterArt1, 107 },
@@ -109,37 +108,37 @@ const CatalogArt lockedCharacterArt[] = {
   {nullptr, 120},
   {&lockedCharacterArt29, 107 },
 };
-const CompressedImage foodArt0 = {nullptr, 14165, 54, 117, 133, 138, 921476};
-const CompressedImage foodArt1 = {nullptr, 17621, 51, 133, 142, 120, 935641};
-const CompressedImage foodArt2 = {nullptr, 13734, 57, 137, 130, 110, 953262};
-const CompressedImage foodArt3 = {nullptr, 26521, 35, 126, 174, 134, 966996};
-const CompressedImage foodArt4 = {nullptr, 18053, 34, 123, 162, 131, 993517};
-const CompressedImage foodArt5 = {nullptr, 20893, 41, 122, 162, 139, 1011570};
-const CompressedImage foodArt6 = {nullptr, 15782, 39, 118, 132, 155, 1032463};
-const CompressedImage foodArt7 = {nullptr, 19580, 52, 120, 137, 145, 1048245};
-const CompressedImage foodArt8 = {nullptr, 16862, 57, 121, 118, 135, 1067825};
-const CompressedImage foodArt9 = {nullptr, 24100, 36, 116, 155, 149, 1084687};
-const CompressedImage foodArt10 = {nullptr, 19194, 46, 137, 154, 122, 1108787};
-const CompressedImage foodArt11 = {nullptr, 19667, 43, 138, 151, 125, 1127981};
-const CompressedImage foodArt12 = {nullptr, 19434, 51, 133, 130, 120, 1147648};
-const CompressedImage foodArt13 = {nullptr, 13936, 52, 137, 132, 119, 1167082};
-const CompressedImage foodArt14 = {nullptr, 16192, 55, 142, 139, 117, 1181018};
-const CompressedImage foodArt15 = {nullptr, 13274, 60, 146, 121, 108, 1197210};
-const CompressedImage foodArt16 = {nullptr, 26110, 42, 130, 154, 137, 1210484};
-const CompressedImage foodArt17 = {nullptr, 22929, 47, 131, 146, 133, 1236594};
-const CompressedImage foodArt18 = {nullptr, 25095, 54, 117, 136, 152, 1259523};
-const CompressedImage foodArt19 = {nullptr, 22679, 59, 124, 132, 145, 1284618};
-const CompressedImage foodArt20 = {nullptr, 18334, 44, 144, 156, 118, 1307297};
-const CompressedImage foodArt21 = {nullptr, 15551, 74, 111, 95, 156, 1325631};
-const CompressedImage foodArt22 = {nullptr, 20213, 38, 129, 144, 124, 1341182};
-const CompressedImage foodArt23 = {nullptr, 19343, 48, 124, 140, 129, 1361395};
-const CompressedImage foodArt24 = {nullptr, 26958, 47, 107, 145, 146, 1380738};
-const CompressedImage foodArt25 = {nullptr, 17565, 34, 139, 167, 109, 1407696};
-const CompressedImage foodArt26 = {nullptr, 20176, 57, 116, 125, 151, 1425261};
-const CompressedImage foodArt27 = {nullptr, 15972, 41, 116, 152, 153, 1445437};
-const CompressedImage foodArt28 = {nullptr, 17677, 48, 136, 148, 118, 1461409};
-const CompressedImage foodArt29 = {nullptr, 14595, 65, 119, 105, 144, 1479086};
-const CompressedImage foodArt30 = {nullptr, 14531, 61, 126, 124, 135, 1493681};
+const CompressedImage foodArt0 = {nullptr, 14165, 54, 117, 133, 138, 904938};
+const CompressedImage foodArt1 = {nullptr, 17621, 51, 133, 142, 120, 919103};
+const CompressedImage foodArt2 = {nullptr, 13734, 57, 137, 130, 110, 936724};
+const CompressedImage foodArt3 = {nullptr, 26521, 35, 126, 174, 134, 950458};
+const CompressedImage foodArt4 = {nullptr, 18053, 34, 123, 162, 131, 976979};
+const CompressedImage foodArt5 = {nullptr, 20893, 41, 122, 162, 139, 995032};
+const CompressedImage foodArt6 = {nullptr, 15782, 39, 118, 132, 155, 1015925};
+const CompressedImage foodArt7 = {nullptr, 19580, 52, 120, 137, 145, 1031707};
+const CompressedImage foodArt8 = {nullptr, 16862, 57, 121, 118, 135, 1051287};
+const CompressedImage foodArt9 = {nullptr, 24100, 36, 116, 155, 149, 1068149};
+const CompressedImage foodArt10 = {nullptr, 19194, 46, 137, 154, 122, 1092249};
+const CompressedImage foodArt11 = {nullptr, 19667, 43, 138, 151, 125, 1111443};
+const CompressedImage foodArt12 = {nullptr, 19434, 51, 133, 130, 120, 1131110};
+const CompressedImage foodArt13 = {nullptr, 13936, 52, 137, 132, 119, 1150544};
+const CompressedImage foodArt14 = {nullptr, 16192, 55, 142, 139, 117, 1164480};
+const CompressedImage foodArt15 = {nullptr, 13274, 60, 146, 121, 108, 1180672};
+const CompressedImage foodArt16 = {nullptr, 26110, 42, 130, 154, 137, 1193946};
+const CompressedImage foodArt17 = {nullptr, 22929, 47, 131, 146, 133, 1220056};
+const CompressedImage foodArt18 = {nullptr, 25095, 54, 117, 136, 152, 1242985};
+const CompressedImage foodArt19 = {nullptr, 22679, 59, 124, 132, 145, 1268080};
+const CompressedImage foodArt20 = {nullptr, 18334, 44, 144, 156, 118, 1290759};
+const CompressedImage foodArt21 = {nullptr, 15551, 74, 111, 95, 156, 1309093};
+const CompressedImage foodArt22 = {nullptr, 20213, 38, 129, 144, 124, 1324644};
+const CompressedImage foodArt23 = {nullptr, 19343, 48, 124, 140, 129, 1344857};
+const CompressedImage foodArt24 = {nullptr, 26958, 47, 107, 145, 146, 1364200};
+const CompressedImage foodArt25 = {nullptr, 17565, 34, 139, 167, 109, 1391158};
+const CompressedImage foodArt26 = {nullptr, 20176, 57, 116, 125, 151, 1408723};
+const CompressedImage foodArt27 = {nullptr, 15972, 41, 116, 152, 153, 1428899};
+const CompressedImage foodArt28 = {nullptr, 17677, 48, 136, 148, 118, 1444871};
+const CompressedImage foodArt29 = {nullptr, 14595, 65, 119, 105, 144, 1462548};
+const CompressedImage foodArt30 = {nullptr, 14531, 61, 126, 124, 135, 1477143};
 const CatalogArt foodArt[] = {
   {&foodArt0, 120 },
   {&foodArt1, 111 },
@@ -173,10 +172,10 @@ const CatalogArt foodArt[] = {
   {&foodArt29, 53 },
   {&foodArt30, 102 },
 };
-const CompressedImage catalogArrows = {nullptr, 1411, 1, 193, 239, 34, 1508212};
-const CompressedImage catalogPinkBar = {nullptr, 853, 0, 0, 240, 30, 1509623};
-const CompressedImage catalogDarkBar = {nullptr, 1096, 0, 0, 240, 30, 1510476};
-const CompressedImage catalogLock = {nullptr, 653, 117, 276, 20, 25, 1511572};
+const CompressedImage catalogArrows = {nullptr, 1411, 1, 193, 239, 34, 1491674};
+const CompressedImage catalogPinkBar = {nullptr, 853, 0, 0, 240, 30, 1493085};
+const CompressedImage catalogDarkBar = {nullptr, 1096, 0, 0, 240, 30, 1493938};
+const CompressedImage catalogLock = {nullptr, 653, 117, 276, 20, 25, 1495034};
 const uint8_t catalogFontPixels[] = {
   0,0,0,0,0,0,138,244,138,0,0,244,255,244,0,0,137,244,137,0,
   0,0,0,0,0,90,255,58,0,0,0,0,0,164,237,3,0,0,0,0,
