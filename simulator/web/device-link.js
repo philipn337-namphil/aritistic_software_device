@@ -67,11 +67,11 @@ export function createDeviceLink({ onFrame, onScreen, onStatus, onBeep, onConnec
 
   // ---- WebAssembly ---------------------------------------------------------
   async function startWasm() {
-    // Bump with every wasm rebuild so browsers do not pair a stale yeso.wasm with a new yeso.js.
-    const build = 'tear';
+    // Bump with every wasm or ui.pak rebuild so browsers do not mix stale and new copies.
+    const build = 'catalog';
     const { default: createYesoModule } = await import(`./wasm/yeso.js?v=${build}`);
     const M = await createYesoModule({ locateFile: (file) => `wasm/${file}?v=${build}`, print: () => {}, printErr: () => {} });
-    const pak = await fetch('assets/ui.pak');
+    const pak = await fetch(`assets/ui.pak?v=${build}`);
     if (!pak.ok) throw new Error('assets/ui.pak missing');
     M.FS.writeFile('/ui.pak', new Uint8Array(await pak.arrayBuffer()));
     // Records, pairing and settings persist in this browser (IndexedDB).
