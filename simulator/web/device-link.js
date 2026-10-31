@@ -68,7 +68,7 @@ export function createDeviceLink({ onFrame, onScreen, onStatus, onBeep, onConnec
   // ---- WebAssembly ---------------------------------------------------------
   async function startWasm() {
     // Bump with every wasm rebuild so browsers do not pair a stale yeso.wasm with a new yeso.js.
-    const build = 'motion';
+    const build = 'tear';
     const { default: createYesoModule } = await import(`./wasm/yeso.js?v=${build}`);
     const M = await createYesoModule({ locateFile: (file) => `wasm/${file}?v=${build}`, print: () => {}, printErr: () => {} });
     const pak = await fetch('assets/ui.pak');
