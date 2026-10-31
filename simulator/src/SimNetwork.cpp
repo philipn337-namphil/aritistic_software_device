@@ -10,6 +10,12 @@
 #include <random>
 
 namespace routine::sim {
+namespace {
+// The integration server over HTTPS. Browsers (the WebAssembly build on
+// GitHub Pages) can only reach it this way; the firmware's plain-HTTP
+// kDevelopmentServerUrl is the same backend, so saved settings move over.
+constexpr char kSimServerUrl[]="https://52-79-82-17.sslip.io";
+}
 void SimNetwork::begin(uint32_t){
   Settings loaded{};std::string value;
   if(readSetting(file_,"endpoint",value))loaded.endpoint=value;
@@ -23,7 +29,7 @@ void SimNetwork::begin(uint32_t){
   // Like the development firmware, the virtual device is bound to the
   // integration server. The device UID replaces the ESP32 eFuse MAC.
   bool changed=false;
-  if(loaded.endpoint.empty()){loaded.endpoint=platform::kDevelopmentServerUrl;changed=true;}
+  if(loaded.endpoint.empty()||loaded.endpoint==platform::kDevelopmentServerUrl){loaded.endpoint=kSimServerUrl;changed=true;}
   if(loaded.deviceUid.empty()){
     std::random_device random;const uint64_t mac=((uint64_t(random())<<32)|random())&0xffffffffffffull;
     char uid[32];std::snprintf(uid,sizeof(uid),"YESO-%012llX",static_cast<unsigned long long>(mac));
