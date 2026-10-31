@@ -10,23 +10,29 @@ import { createDeviceLink, decodeFrame } from './device-link.js';
 
 const $ = (selector) => document.querySelector(selector);
 
-// The seven colourways of the product renders.
+// The seven PLA filament colours of the product (colour sheet values).
+const PLA = {
+  jadeWhite: '#FFFFFF', black: '#000000', almondYellow: '#F0E191', lilacPurple: '#AE96D4',
+  appleGreen: '#C2E189', milkyPink: '#F7CED7', babyBlue: '#A4DBE8',
+};
+// Keys: Baby Blue on the white case (as in the renders), Jade White elsewhere.
 const COLORS = [
-  { name: '화이트', body: '#f2f2f4', key: '#a6cdf3', strap: '#a6cdf3' },
-  { name: '퍼플', body: '#b7a2ee', key: '#f4f3f8', strap: '#a690e2' },
-  { name: '블랙', body: '#2b2a2f', key: '#f4f3f8', strap: '#3a3940' },
-  { name: '핑크', body: '#f3cfdf', key: '#f6f2f5', strap: '#ebbdd1' },
-  { name: '그린', body: '#c6e39a', key: '#f4f6ef', strap: '#b5d686' },
-  { name: '블루', body: '#a6cbef', key: '#f1f2f6', strap: '#cfe2f6' },
-  { name: '옐로', body: '#f4de78', key: '#f7f5ea', strap: '#ecd163' },
+  { name: 'Jade White #FFFFFF', body: PLA.jadeWhite, key: PLA.babyBlue, strap: PLA.babyBlue },
+  { name: 'Black #000000', body: PLA.black, key: PLA.jadeWhite, strap: PLA.black },
+  { name: 'Almond Yellow #F0E191', body: PLA.almondYellow, key: PLA.jadeWhite, strap: PLA.almondYellow },
+  { name: 'Lilac Purple #AE96D4', body: PLA.lilacPurple, key: PLA.jadeWhite, strap: PLA.lilacPurple },
+  { name: 'Apple Green #C2E189', body: PLA.appleGreen, key: PLA.jadeWhite, strap: PLA.appleGreen },
+  { name: 'Milky Pink #F7CED7', body: PLA.milkyPink, key: PLA.jadeWhite, strap: PLA.milkyPink },
+  { name: 'Baby Blue #A4DBE8', body: PLA.babyBlue, key: PLA.jadeWhite, strap: PLA.babyBlue },
 ];
 
 // ---- renderer / scene -----------------------------------------------------
 const canvas = $('#scene');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+// Khronos PBR Neutral keeps base colours close to the sheet values (ACES shifts hues).
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -176,27 +182,19 @@ function addSticker(backShell) {
   device.add(new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map: label.texture, roughness: 0.55, side: THREE.DoubleSide })));
 }
 
-// Lanyard at the top centre: eyelet ring → two cords → capsule clasp → loop.
+// Lanyard from the strap CAD export (models/strap.glb, metres): node 0 is the
+// cord loop, node 1 the metal ring (Ø11.5 mm, centre at -3.8, -110, -2.7 mm).
+// The ring is hung at the top centre of the case, mid-thickness.
+const STRAP = { url: 'models/strap.glb', cord: 0, ring: 1, ringCenter: [-0.0038, -0.110, -0.0027], hangAt: [0, 0.0447, 0.078] };
 const strapGroup = new THREE.Group();
-const top = 4.5;
-const ring = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.045, 16, 48), new THREE.MeshStandardMaterial({ color: '#dfe3ea', metalness: 0.9, roughness: 0.2 }));
-ring.position.set(0, top + 0.16, 0);
-const strapMaterial = new THREE.MeshPhysicalMaterial({ roughness: 0.5, clearcoat: 0.4 });
-const cord = (points, radius, closed = false) => {
-  const mesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points, closed, 'centripetal'), 96, radius, 10, closed), strapMaterial);
-  mesh.castShadow = true;
-  return mesh;
-};
-const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
-const clasp = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.6, 8, 20), strapMaterial);
-clasp.position.set(0, top + 1.75, 0);
-clasp.castShadow = true;
-strapGroup.add(ring, clasp,
-  cord([v(-0.02, top + 0.38), v(-0.22, top + 0.9, 0.04), v(-0.08, top + 1.45)], 0.05),
-  cord([v(0.02, top + 0.38), v(0.22, top + 0.9, -0.04), v(0.08, top + 1.45)], 0.05),
-  cord([v(0, top + 2.05), v(-0.7, top + 2.7, 0.15), v(-0.95, top + 3.8), v(-0.3, top + 4.6, -0.15),
-        v(0.6, top + 4.5, -0.1), v(0.95, top + 3.6, 0.1), v(0.55, top + 2.6, 0.1), v(0.02, top + 2.1)], 0.07, true));
-device.add(strapGroup);
+strapGroup.position.set(...STRAP.hangAt.map((v, i) => v - STRAP.ringCenter[i]));
+model.add(strapGroup);
+const strapMaterial = new THREE.MeshPhysicalMaterial({ roughness: 0.55, clearcoat: 0.3 });
+const ringMaterial = new THREE.MeshStandardMaterial({ color: '#dfe3ea', metalness: 0.9, roughness: 0.2 });
+new GLTFLoader().load(STRAP.url, async (gltf) => {
+  const node = (index) => gltf.parser.getDependency('node', index);
+  strapGroup.add(mergePart(await node(STRAP.cord), strapMaterial), mergePart(await node(STRAP.ring), ringMaterial));
+});
 
 new GLTFLoader().load(MODEL.url, async (gltf) => {
   const node = (index) => gltf.parser.getDependency('node', index);
